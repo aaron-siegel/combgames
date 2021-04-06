@@ -1,0 +1,56 @@
+\ProvidesFile{cg-sym.tex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                                                          %%
+%%                    Font Declarations                     %%
+%%                                                          %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\DeclareFontFamily{OT1}{cgames}{}
+\DeclareFontShape {OT1}{cgames}{m}{n}{<-6> game5 <6-7> game6 <7-8> game7 <8-9> game8 <9-10> game9 <10-> game10}{}
+\DeclareSymbolFont{cgsymb}{OT1}{cgames}{m}{n}
+
+\DeclareMathSymbol{\cgup}        {\mathord}  {symbols}{"22}
+\DeclareMathSymbol{\cgdown}      {\mathord}  {symbols}{"23}
+\DeclareMathSymbol{\cgdoubleup}  {\mathord}  {symbols}{"2A}
+\DeclareMathSymbol{\cgdoubledown}{\mathord}  {symbols}{"2B}
+\DeclareMathSymbol{\cgneg}       {\mathord}  {symbols}{"00}
+\DeclareMathSymbol{\cgstar}      {\mathord}  {symbols}{"03}
+\DeclareMathSymbol{\cgtripleup}  {\mathord}  {cgsymb} {"00}
+\DeclareMathSymbol{\cgtripledown}{\mathord}  {cgsymb} {"01}
+\DeclareMathSymbol{\cgquadup}    {\mathord}  {cgsymb} {"02}
+\DeclareMathSymbol{\cgquaddown}  {\mathord}  {cgsymb} {"03}
+\DeclareMathSymbol{\cgtiny}      {\mathord}  {cgsymb} {"08}
+\DeclareMathSymbol{\cgminy}      {\mathord}  {cgsymb} {"09}
+\DeclareMathSymbol{\cgnmultiply} {\mathrel}  {cgsymb} {"0A}
+\DeclareMathSymbol{\cgfuzzy}     {\mathrel}  {cgsymb} {"0B}
+\DeclareMathSymbol{\cglfuz}      {\mathrel}  {cgsymb} {"0C}
+\DeclareMathSymbol{\cggfuz}      {\mathrel}  {cgsymb} {"0D}
+\DeclareMathSymbol{\cgupsum}     {\mathrel}  {cgsymb} {"0E}
+\DeclareMathSymbol{\cgdownsum}   {\mathrel}  {cgsymb} {"0F}
+\DeclareMathSymbol{\cgko}        {\mathord}  {cgsymb} {"10}
+\DeclareMathSymbol{\cgKo}        {\mathord}  {cgsymb} {"11}
+\DeclareMathSymbol{\cgbarforko}  {\mathord}  {cgsymb} {"12}
+\DeclareMathSymbol{\cgfarstar}   {\mathord}  {cgsymb} {"13}
+\DeclareMathSymbol{\cgloony}     {\mathord}  {cgsymb} {"14}
+\DeclareMathSymbol{\cgsunny}     {\mathord}  {cgsymb} {"15}
+
+\newcommand{\cgkobar}{\cgbarforko\cgko}
+\newcommand{\cgKobar}{\cgbarforko\cgKo}
+
+\newcommand\cgups[1]{%
+  \ifcase#1\relax%
+    0\or\cgup\or\cgdoubleup\or\cgtripleup\or\cgquadup%
+  \else%
+    \ifnum#1<\z@\cg@updownerror\else{#1}\cdot\cgup\fi%
+  \fi%
+}
+\newcommand\cgdowns[1]{%
+  \ifcase#1\relax%
+    0\or\cgdown\or\cgdoubledown\or\cgtripledown\or\cgquaddown%
+  \else%
+    \ifnum#1<\z@\cg@updownerror\else{#1}\cdot\cgup\fi%
+  \fi%
+}
+\newcommand\cg@updownerror{\errmessage{Argument to cgups and cgdowns must be positive.}}
+

@@ -1,0 +1,643 @@
+\ProvidesFile{cg-board.tex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                                                          %%
+%%                      GRIDGAMES                           %%
+%%                                                          %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Define loony symbol.  First check if we can load marvosym which has
+% a nice one.
+% \let\@temp=\@missingfileerror
+% \@tempswatrue
+% \def\@missingfileerror#1#2{\typeout{^^J! LaTeX Warning: File `#1.#2'
+    % not found.^^J^^JUsing a substitute loony symbol.%
+  % }
+  % \@tempswafalse
+% }
+% \RequirePackage{marvosym}
+% \let\@missingfileerror=\@temp
+% \if@tempswa\gdef\cgloony{\textrm\Moon}\fi
+% \expandafter\ifx\csname loony\endcsname\relax\gdef\cgloony{x}\fi
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% FOR ALL DRAWING COMMAND, USE pstricks COMMANDS.
+%     \psunit IS SET, BUT \unitlength IS NOT SET.
+% \newgridgame[options]{gamename}{code}, with options allows
+% \gamename[options]{board-specification}
+% square:  What do use for a boardsquare.  W/ no value empty. Default is square.
+%          The origin for drawing the board square is in the lower
+%          left corner of the square.  You can access counters
+%          gridgamerow and gridgamecol to, for example, check parities.
+% board:  What to draw for the gameboard.  Use counters gridgamerows and gridgamecols.
+%         (Rarely needed;  Usually just draw each square individually as above.)
+% unit:  Side length of a square (also sets pstricks unit
+%        Value can (and should) be accessed by \gridgameunit
+% runit, xunit, yunit:  In case you want different x- and y-coordinate scales.
+%        (Analogous to pstricks)
+% printname:  (boolean) true means print the gamename under the board.  Default false.
+%    (I use this until such time as I've come up with distinctive pieces.)
+% shrink:  (boolean) Make the bounding box is .5 units smaller on each side.
+% code:  A sequence of character, expansion pairs (must have an even number of atoms)
+%        default is X,x,L,l all make a black circle
+%                   O,o,R,r all make a white circle
+%                   .       is an empty square
+%        If a character cannot be translated, default is draw no square.
+%        The origin for an expansion is in the center of square, and
+%            in a makebox(0,0) to center any text.
+% frame: Put a frame around the gameboard
+% color:  Use color (currently only implemented in Hackenbush)
+%         Use \ifgridgamecolor to access
+% dottedline: In games which have dashed or dotted lines, this
+%    specifies how they are drawn.  You specify the settings which
+%    should be passed to \psline, but wrap them in 3 braces.  Yes 3.
+%    E.g., \dotsandboxes[unit=.5cm,dottedline={{{linewidth=1mm,linecolor=blue}}}]
+% insert:  Stuff to insert in the diagram in addition to the
+%          gameboard.  Used to decorate the board.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \newgridgame
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \@gridgameextendcode\@gridgamebasecode
+\let\gridgameunit=\gridgamerunit
+\newlength{\gridgamerunit}\setlength{\gridgamerunit}{.3cm}%
+\newlength{\gridgamexunit}\setlength{\gridgamexunit}{.3cm}%
+\newlength{\gridgameyunit}\setlength{\gridgameyunit}{.3cm}%
+\define@key{gridgame}{unit}{%
+  \setlength{\gridgamerunit}{#1}%
+  \setlength{\gridgamexunit}{#1}%
+  \setlength{\gridgameyunit}{#1}%
+}
+\define@key{gridgame}{xunit}{\setlength{\gridgamexunit}{#1}}
+\define@key{gridgame}{yunit}{\setlength{\gridgameyunit}{#1}}
+\define@key{gridgame}{runit}{\setlength{\gridgamerunit}{#1}}
+\def\@gridgamesquare{\psline(0,0)(1,0)(1,1)(0,1)(0,0)}
+\define@key{gridgame}{square}[\psline(0,0)(1,0)(1,1)(0,1)(0,0)]{\def\@gridgamesquare{#1}}
+\def\@gridgameframe{}
+\define@key{gridgame}{frame}[\fbox]{\def\@gridgameframe{#1}}
+\def\@gridgametheboard{}
+\define@key{gridgame}{board}[]{\def\@gridgametheboard{#1}}
+\def\@gridgameprintname{}
+\define@key{gridgame}{printname}{\def\@gridgameprintname{#1}}
+\def\@gridgameextendcode{}
+\define@key{gridgame}{code}{\def\@gridgameextendcode{#1}}
+\newpsobject{gridgame@dottedline}{psline}{linestyle=dashed,dash=1.5pt 1.5pt}
+\define@key{gridgame}{dottedline}{\newpsobject{gridgame@dottedline}{psline}#1}
+\define@key{gridgame}{insert}{\def\@gridgameinsertion{#1}}
+\def\@gridgameinsertion{}
+\def\@gridgameset{}
+\def\Gridgameset#1{\def\@gridgameset{#1}}
+
+\newif\if@gridgameshrink
+\newif\if@gridgameupcase % NOTE YET USED
+\newif\if@gridgamespaces % NOTE YET USED
+\newif\ifgridgamecolor
+\define@key{gridgame}{shrink}[true]{\csname @gridgameshrink#1\endcsname}
+\define@key{gridgame}{upcase}[true]{\csname @gridgameupcase#1\endcsname}
+\define@key{gridgame}{color}[true]{\csname gridgamecolor#1\endcsname}
+
+\def\@gridgamebasecode{
+X {\pscircle*{.45}}
+L {\pscircle*{.45}}
+x {\pscircle*{.45}}
+l {\pscircle*{.45}}
+O {\pscircle{.45}}
+R {\pscircle{.45}}
+o {\pscircle{.45}}
+r {\pscircle{.45}}
+0 {0}
+1 {1}
+2 {2}
+3 {3}
+4 {4}
+5 {5}
+6 {6}
+7 {7}
+8 {8}
+9 {9}
+. {}
+}
+
+\def\gridgame@setcatcodes{%
+\edef\@oldcarat{\the\catcode`\^}%
+\edef\@oldless{\the\catcode`\<}%
+\edef\@oldgreater{\the\catcode`\>}%
+\catcode`\^=11%
+}
+\def\gridgame@resetcatcodes{%
+%\expandafter\typeout{resetting to \@oldcarat \the\catcode`\v}
+\catcode`\^=\@oldcarat%
+}
+
+\def\@@setgridgamekeys#1{\expandafter\@setgridgamekeys\expandafter{#1}}
+\def\@setgridgamekeys#1{\setkeys{gridgame}{#1}}
+\newcommand\newgridgame[3][]{%
+  \expandafter\newcommand\csname @#2keys\endcsname{}%
+  \expandafter\newcommand\csname #2set\endcsname[1]{%
+    \expandafter\def\csname @#2keys\endcsname{##1}}%
+  \expandafter\newcommand\csname#2\endcsname[1][]{%
+    %
+    \ifmmode\def\gridgame@afterdone{}%
+       \else\def\gridgame@afterdone{$}$%
+    \fi%
+    \begingroup%
+    \setkeys{gridgame}{#1}%
+    \expandafter\@setgridgamekeys\expandafter{\@gridgameset}%
+    \expandafter\@@setgridgamekeys\expandafter{\csname @#2keys\endcsname}%
+    \setkeys{gridgame}{##1}%
+    \def\@gridgamecode{#3}%
+    \catcode\#\active%
+    % BUG: THIS WORKS FOR NOW.  Probably want to set and reset the catcodes
+    % at all three places used.  When pre-reading the gameboard (to size
+    % it), when reading it (to place stone, etc.), and when reading
+    % the code to match the characters.
+    \gridgame@setcatcodes%
+    \@gridgameboard}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% gameboard.sty macros
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcounter{gridgamecol}
+\newcounter{gridgamerow}
+\newcounter{gridgamecols}
+\newcounter{gridgamerows}
+
+\def\@gridgamesetdims#1{%
+  %\typeout{A}%
+  \setcounter{gridgamecols}{0}\setcounter{gridgamecol}{0}\setcounter{gridgamerows}{0}%
+                \@@gridgamesetdims#1\end}%
+\def\@@gridgameadvancerow{%%
+  %\typeout{B}%
+  \ifnum\value{gridgamecols}<\value{gridgamecol} \setcounter{gridgamecols}{\value{gridgamecol}}\fi%
+  \ifnum\value{gridgamecol}>0% Ignore leading newline (and the unlikely blank line)%
+  \setcounter{gridgamecol}{0}%
+  \refstepcounter{gridgamerows}\fi}%
+\def\@@gridgamesetdims#1{%
+  %\typeout{C}%
+ \ifx#1\end%%
+     \ifnum\value{gridgamecol}>0\@@gridgameadvancerow\fi% Append missing newline%
+     \let\next=\relax%
+ \else%
+    \ifx#1\\\@@gridgameadvancerow%
+    \else\refstepcounter{gridgamecol}%
+    \fi%
+ \let\next=\@@gridgamesetdims\fi \next}%
+%
+\def\@gridgameprocess#1{%
+  %\typeout{D}%
+  \psset{unit=1\gridgamerunit,arrows=-,linewidth=.02\gridgamerunit,linecolor=black}%
+  \psset{xunit=1\gridgamexunit,yunit=1\gridgameyunit}
+  \setcounter{gridgamerow}{\value{gridgamerows}} \setcounter{gridgamecol}{0}  %
+  \@@gridgameprocess#1\end%%
+  \setcounter{gridgamerow}{\value{gridgamerows}} \setcounter{gridgamecol}{0}%
+}%
+%
+
+\def\@gridgame#1{%
+  %\typeout{E}%
+  \psset{unit=1\gridgamerunit,arrows=-,linewidth=.02\gridgamerunit,linecolor=black}%
+  \psset{xunit=1\gridgamexunit,yunit=1\gridgameyunit}%
+  \if@gridgameshrink\@gridgamedecrementdims%
+  \begin{pspicture}(.5,.5)(\arabic{gridgamecols}.5,\arabic{gridgamerows}.5)%
+  \else%
+  \begin{pspicture}(\arabic{gridgamecols},\arabic{gridgamerows})%
+  \fi%
+    \@gridgametheboard\@gridgameinsertion%
+    \rput(0,-.1){\makebox(0,0)[lt]{\scriptsize\sc \@gridgameprintname}}%
+    %\typeout{#1}%
+    \if@gridgameshrink\@gridgameincrementdims\fi%
+    \@gridgameprocess{#1}%
+  \end{pspicture}}%
+
+\def\@gridgameincrementdims{%
+  %\typeout{G}%
+  \addtocounter{gridgamerows}{1}%
+  \addtocounter{gridgamecols}{1}}
+
+\def\@gridgamedecrementdims{%
+  %\typeout{H}%
+  \addtocounter{gridgamerows}{-1}%
+  \addtocounter{gridgamecols}{-1}}
+
+\def\@@gridgameprocess#1{%
+ %\typeout{F}%
+ \ifx#1\end%
+   %\typeout{X}%
+   \let\next=\gridgame@resetcatcodes%
+ \else%\typeout{H}%
+   % first adjust row, col%
+   \ifx#1\\%
+   \ifnum\value{gridgamecol}>0% Ignore leading newline (and the unlikely blank line)%
+   \addtocounter{gridgamerow}{-1}\fi%
+     \setcounter{gridgamecol}{0}%
+   \else%
+     \addtocounter{gridgamecol}{1}%
+   % what gets drawn is game specific
+   \@gridgamedisplaychar{#1}%
+   \fi%
+   % continue looping%
+ \let\next=\@@gridgameprocess\fi \next}%
+
+\newlength{\@halfgridgameunit}%
+  %\typeout{I}%
+%\def\settodepth#1#2{\setbox\tempbox\hbox{#2}#1\dp\tempbox\relax}%
+%\def\settoheight#1#2{\setbox\tempbox\hbox{#2}#1\ht\tempbox\relax}%
+%
+%
+\def\@gridgameboard#1{%
+  %\typeout{K}%
+  \@gridgamesetdims{#1}%
+  \if@gridgameshrink\@gridgamedecrementdims\fi%
+  \setlength{\@halfgridgameunit}{.5\gridgameyunit}%
+  \setlength{\@halfgridgameunit}{\value{gridgamerows}\@halfgridgameunit}%
+  \if@gridgameshrink\@gridgameincrementdims\fi%
+  \raisebox{.5ex}{\raisebox{-1\@halfgridgameunit}%%
+    {\expandafter\@gridgameframe%
+      {\@gridgame%\if@gridgameupcase\uppercase\fi
+        {#1}}}}\endgroup\gridgame@afterdone}%
+%    {\if@gridgameframe{\fbox{\@gridgame{#1}}}\else{\@gridgame{#1}}\fi%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Processing characters of a gridgame
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\@gridgamedrawsquare{{\rput(-.5,-.5){\@gridgamesquare}}}
+\def\@gobbletoendend#1#2{% Gobble tokens in pairs until \end\end
+                         % reached.  No parity error checking is done.
+  \ifx#1\end\let\next=\@gridgamedrawsquare%
+  \else\let\next=\@gobbletoendend%
+  \fi%
+  \next%
+}
+\def\@processonechar@#1{% THIS IS WHERE I TRIED \uppercase BUT FAILED
+  \@processonechar#1}
+\def\@processonechar#1{% Expand the match to #1 in \@gridgame@code.
+  \def\foundcommand{NONE}%
+  \ifx#1\end\let\next=\relax%
+  \else\def\chartofind{#1}%
+  \expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter%
+  \@@processonechar\expandafter\expandafter\expandafter%
+  \@gridgameextendcode\expandafter\@gridgamecode\@gridgamebasecode\end\end%
+       \let\next=\@processonechar\fi%
+  \next%
+}
+\def\@@processonechar#1#2{% Expand the match to #1 in sequence of pairs
+                          % terminated with \end\end (used by \@processonechar)
+  \let\afternext=\relax%
+  \ifx#1\end\let\next=\relax%
+  \else\expandafter\ifx\chartofind#1#2\let\next=\@gobbletoendend%
+  \else\let\next=\@@processonechar%
+  \fi\fi\expandafter\next%
+}
+
+\def\@gridgamedisplaychar#1{%
+  \rput(\value{gridgamecol},\value{gridgamerow}){%
+    \rput(-.5,-.5){\makebox(0,0){\@processonechar@#1\end}}}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% THE GAMES DEFINED
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% DOMINEERING%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newgridgame[unit=.3cm,square=]{Domineering}{%%
+  o {{\psline(-.5,-.5)(.5,-.5)(.5,.5)(-.5,.5)(-.5,-.5)}}%
+  x {{\rput(0,0){{\pspolygon*[linewidth=0pt,linecolor=lightgray](-.5,-.5)(-.5,.5)(.5,.5)(.5,-.5)}}%
+      \psline(-.5,-.5)(.5,-.5)(.5,.5)(-.5,.5)(-.5,-.5)}}%
+  ^ {}%
+  > {}%
+  v {\psline(-.5,-.5)(.5,-.5)(.5,1.5)(-.5,1.5)(-.5,-.5)%%
+      \rput(-.5,-.5){\pspolygon*[linewidth=0pt]%%
+      (.4,.4)(.2,.2)(.8,.2)(.6,.4)(.6,1.6)(.8,1.8)(.2,1.8)(.4,1.6)}}%
+  < {{\psline(-.5,-.5)(1.5,-.5)(1.5,.5)(-.5,.5)(-.5,-.5)}%
+      \rput(-.5,-.5){\pspolygon*[linewidth=0pt]%
+       (.4,.4)(.2,.2)(.2,.8)(.4,.6)(1.6,.6)(1.8,.8)(1.8,.2)(1.6,.4)}}%%
+ }
+
+%% \newgridgame[unit=.3cm,square=]{domineering}{%%
+%%   o {{\psline(-.5,-.5)(.5,-.5)(.5,.5)(-.5,.5)(-.5,-.5)}}%
+%%   x {{\psline(-.5,-.5)(.5,-.5)(.5,.5)(-.5,.5)(-.5,-.5)%
+%%      \rput(0,0){{\pspolygon*[linewidth=0pt,linecolor=lightgray](-.5,-.5)(-.5,.5)(.5,.5)(.5,-.5)}}}}%
+%%   ^ {\psline(-.5,-1.5)(.5,-1.5)(.5,.5)(-.5,.5)(-.5,-1.5)}%%
+%%   > {{\psline(-1.5,-.5)(.5,-.5)(.5,.5)(-1.5,.5)(-1.5,-.5)}}%
+%%   v {%
+%%       \rput(-.5,-.5){\pspolygon*[linewidth=0pt]%%
+%%       (.4,.4)(.2,.2)(.8,.2)(.6,.4)(.6,1.6)(.8,1.8)(.2,1.8)(.4,1.6)}}%
+%%   < {{%
+%%       \rput(-.5,-.5){\pspolygon*[linewidth=0pt]%
+%%        (.4,.4)(.2,.2)(.2,.8)(.4,.6)(1.6,.6)(1.8,.8)(1.8,.2)(1.6,.4)}}}%%
+%% }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CLOBBER
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\Clobber@Base#1#2{
+  \SpecialCoor
+  \rput(-.5,-.5){
+    \psset{offset=0,nodesep=.1}
+    \ifx#2a
+    \pnode(.13333,.75){a}
+    \pnode(.86666,-1|a){b}
+    \pnode(.73333,.25){c}
+    \pnode(.26666,-1|c){d}
+    \pnode([angle=0]a){at}
+    \pnode([angle=0]d){dt}
+    \pnode([angle=-71.565,nodesep=.1]a){a1}
+    \pnode([angle=180,nodesep=.05]c){c1}
+    \pnode([angle=71.565]c){c2}
+    \pnode([angle=108.435,nodesep=.1]dt){d2}
+    \pnode([angle=-71.565,nodesep=.00]at){a2}
+    \psarc[linewidth=.02\psunit](.5,.22){.08}{-240}{60}
+    \else
+    \pnode(.13333,.25){a}
+    \pnode(.86666,-1|a){b}
+    \pnode(.73333,.75){c}
+    \pnode(.26666,-1|c){d}
+    \pnode([angle=0]a){at}
+    \pnode([angle=0]d){dt}
+    \pnode([angle=71.565,nodesep=.1]a){a1}
+    \pnode([angle=180,nodesep=.05]c){c1}
+    \pnode([angle=-71.565]c){c2}
+    \pnode([angle=-108.435,nodesep=.1]dt){d2}
+    \pnode([angle=71.565,nodesep=.00]at){a2}
+    \psarc[linewidth=.02\psunit](.5,.78){.08}{-60}{240}
+    \fi
+    \ifx#1O
+    \pspolygon[linewidth=.02\psunit,linearc=.00](a1)(a2)(b)(c2)(c1)(d)
+    \psset{linewidth=.015\psunit}
+    \else
+    \pspolygon[linewidth=.02\psunit,linearc=.00](a1)(a2)(b)(c2)(c1)(d)
+    \pspolygon*[linewidth=.02\psunit,linearc=.00](a1)(a2)(b)(c2)(c1)(d)
+    \psset{linecolor=white,linewidth=.01\psunit}
+    \fi
+    \psline(d)(d2)(c2)(d2)(a2)
+  }
+}
+\def\ClobberO{\Clobber@Base{O}{c}}
+\def\ClobberX{\Clobber@Base{X}{c}}
+\newgridgame[unit=.3cm]{clobber}{
+  X {\ClobberX}
+  O {\ClobberO}
+  x {\ClobberX}
+  o {\ClobberO}
+}
+\newgridgame[unit=.5cm]{Clobber}{
+  X {\ClobberX}
+  O {\ClobberO}
+  x {\ClobberX}
+  o {\ClobberO}
+}
+\newgridgame[unit=.3cm]{AntiClobber}{
+  X {\Clobber@Base{X}{a}}
+  O {\Clobber@Base{O}{a}}
+  x {\Clobber@Base{X}{a}}
+  o {\Clobber@Base{O}{a}}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% DOTS AND BOXES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newgridgame[square=,unit=.35cm,shrink=true]{DotsAndBoxes}{
+  o {\pscircle*{.3}}
+  - {\psline(-1,0)(1,0)}
+  | {\psline(0,-1)(0,1)}
+  : {\gridgame@dottedline(0,-1)(0,1)}
+  + {\gridgame@dottedline(-1,0)(1,0)}
+  * {\rput(-.05,0){\makebox(0,0){{\small$\scriptstyle\cgloony$}}}}
+  A {\makebox(0,0){\bf{A}}}
+  B {\makebox(0,0){\bf{B}}}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% STRINGS AND COINS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\StringsAndCoinsCoin#1{\rput(0,0){\pscircle{.5}}\rput(0,0){\makebox(0,0){#1}}}
+\newgridgame[square=,unit=.35cm]{StringsAndCoins}{
+ o {\StringsAndCoinsCoin{\$}}
+ + {\gridgame@dottedline(-.45,0)(.45,0)}
+ : {\gridgame@dottedline(0,-.45)(0,.45)}
+ | {\psline(0,-.45)(0,.45)}
+ * {\psline(-.45,0)(.45,0)\rput(-.05,.075){\makebox(0,0)[b]{{\small $\scriptstyle\cgloony$}}}}
+ - {\psline(-.45,0)(.45,0)}
+ ! {\psline(0,-.45)(0,.45)\rput(-.05,0){\makebox(0,0)[l]{$\scriptstyle\cgloony$}}}
+ A {\StringsAndCoinsCoin{\bf A}}
+ B {\StringsAndCoinsCoin{\bf B}}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CHOMP
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\def\ChompPoison{\pscircle{.3}\psline(-.3,-.3)(.3,.3)\psline(-.3,.3)(.3,-.3)}%%
+\newgridgame{Chomp}{
+  O {}
+  X {\ChompPoison}
+  P {\CompPoison}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% BRIDGIT%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newgridgame[shrink=true,square=]{Bridgit}{%
+  o {\rput(0,0){\pscircle{.2}}}
+  x {\rput(0,0){\pscircle*{.2}}}
+  - {\psline(-.8,0)(.8,0)}
+  | {\psline(0,-.8)(0,.8)}
+  + {\gridgame@dottedline(-.8,0)(.8,0)}
+  : {\gridgame@dottedline(0,-.8)(0,.8)}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% AMAZONS%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\Amazonsarcher{%%
+  \psline[linewidth=.02\gridgamerunit,arrowsize=.5pt 3]{->}(.25,.25)(.8,.8)%%
+  \psline[linewidth=.02\gridgamerunit](.25,.8)(.3,.3)(.8,.25)%%
+  \psline[linewidth=.03\gridgamerunit](.2,.23)(.25,.25)(.23,.2)%%
+  \pscurve[linewidth=.04\gridgamerunit](.2,.8)(.675,.675)(.8,.2)}%%
+\def\AmazonsR{{\pscircle[linewidth=.02\gridgamerunit]{.45}}%%
+  \rput(-.5,-.5){\Amazonsarcher}}%
+\def\AmazonsL{{\pscircle*[linewidth=.02\gridgamerunit]{.45}}%%
+  {\psset{linecolor=white}\rput(-.5,-.5){\Amazonsarcher}}}%
+\newgridgame{Amazons}{
+  o {}
+  x {{\rput(0,0){{\pspolygon*[linewidth=0pt,linecolor=lightgray](-.5,-.5)(-.5,.5)(.5,.5)(.5,-.5)}}%
+      \psline(-.5,-.5)(.5,-.5)(.5,.5)(-.5,.5)(-.5,-.5)}}%
+  L {\AmazonsL}
+  R {\AmazonsR}
+  l {\AmazonsL}
+  r {\AmazonsR}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SHOVE and PUSH
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\PushBase#1#2#3{
+  \def\doit##1{%
+    \ifgridgamecolor%
+    \ifx#2O\pscurve*[linecolor=red]##1\pscurve##1%
+    \else\ifx#2X\pscurve*[linecolor=blue]##1\pscurve##1%
+    \else\pscurve*[linecolor=green]##1\pscurve##1%
+    \fi\fi\else%
+    \ifx#2O\pscurve##1%
+    \else\ifx#2X\pscurve*##1%
+    \else\pscurve*[linecolor=lightgray]##1\pscurve##1%
+    \fi\fi\fi
+  }
+  \def\thepiece{
+    \psset{linewidth=.02\psunit}
+    \doit{(.55,.1)(.42,.2)(.33,.27)(.32,.3)(.33,.4)(.33,.5)(.33,.56)(.34,.6)(.355,.625)(.39,.625)
+    (.39,.625)(.39,.625)(.39,.625)(.41,.8)(.425,.83)(.45,.83)(.465,.8)(.5,.4)(.525,.3)(.625,.22)}
+    \ifx#2X
+    \psecurve[linecolor=white,linewidth=.01\psunit](.355,.625)(.39,.625)(.4,.6)(.4,.415)(.4,.425)
+    \else
+    \psecurve(.355,.625)(.39,.625)(.4,.6)(.4,.415)(.4,.425)
+    \fi
+    \psset{linewidth=.01\psunit}
+    \ifx#1P
+    \psline(.6,.4)(.7,.4)
+    \psline(.6,.7)(.7,.7)
+    \else
+    \psline(.7,.3)(.85,.3)
+    \psline(.65,.45)(.9,.45)
+    \psline(.65,.6)(.8,.6)
+    \psline(.65,.75)(.9,.75)
+    \fi}
+  {
+  \ifx#3a\psset{unit=.6\psunit}\fi
+  \ifx#1P\rput(-.5,-.5){\thepiece}\else\rput(-.6,-.5){\thepiece}\fi
+  }
+}
+\def\PushO{\PushBase{P}{O}{.}}
+\def\PushX{\PushBase{P}{X}{.}}
+\def\PushG{\PushBase{P}{G}{.}}
+\def\ShoveO{\PushBase{S}{O}{.}}
+\def\ShoveX{\PushBase{S}{X}{.}}
+\def\ShoveG{\PushBase{S}{G}{.}}
+\def\AllSmallPushO{\PushBase{P}{O}{a}}
+\def\AllSmallPushX{\PushBase{P}{X}{a}}
+\def\AllSmallPushG{\PushBase{P}{G}{a}}
+\def\AllSmallShoveO{\PushBase{S}{O}{a}}
+\def\AllSmallShoveX{\PushBase{S}{X}{a}}
+\def\AllSmallShoveG{\PushBase{S}{G}{a}}
+\newgridgame[unit=.5cm,square={\psline(0,0)(1,0)(1,1)(0,1)}]{Push}{
+  . {}
+  o {\PushO}
+  O {\PushO}
+  x {\PushX}
+  X {\PushX}
+  L {\PushX}
+  R {\PushO}
+  G {\PushG}
+}
+\newgridgame[unit=.5cm,square={\psline(0,0)(1,0)(1,1)(0,1)}]{Shove}{
+  . {}
+  o {\ShoveO}
+  O {\ShoveO}
+  x {\ShoveX}
+  X {\ShoveX}
+  L {\ShoveX}
+  R {\ShoveO}
+  G {\ShoveG}
+}
+\newgridgame[unit=.5cm,square={\psline(0,0)(1,0)(1,1)(0,1)}]{AllSmallShove}{
+  . {}
+  o {\AllSmallShoveO}
+  O {\AllSmallShoveO}
+  x {\AllSmallShoveX}
+  X {\AllSmallShoveX}
+  L {\AllSmallShoveX}
+  R {\AllSmallShoveO}
+  G {\AllSmallShoveG}
+}
+\newgridgame[unit=.5cm,square={\psline(0,0)(1,0)(1,1)(0,1)}]{AllSmallPush}{
+  . {}
+  o {\AllSmallPushO}
+  O {\AllSmallPushO}
+  x {\AllSmallPushX}
+  X {\AllSmallPushX}
+  L {\AllSmallPushX}
+  R {\AllSmallPushO}
+  G {\AllSmallPushG}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% HACKENBUSH STRINGS%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\hackred#1{%
+  \ifgridgamecolor{\psset{linecolor=red,linewidth=2pt}#1}%
+  \else{\psset{doubleline=true,doublesep=1pt,linewidth=.5pt}#1}\fi}%
+\def\hackblue#1{%
+  \ifgridgamecolor{\psset{linecolor=blue,linewidth=2pt}#1}%
+  \else{\psset{linewidth=2pt}#1}\fi}%
+\def\hackgreen#1{%
+  \ifgridgamecolor{\psset{linecolor=green,linewidth=2pt}#1}%
+  \else{\psset{linewidth=2pt,linecolor=lightgray}#1}\fi}%
+
+\def\hackedge{\psline(-.5,0)(.5,0)}
+\def\Hackenbushstring@frame#1{\hspace{.15\psunit}#1\hspace{.15\psunit}}
+\newgridgame[frame=\Hackenbushstring@frame,square=,unit=.5cm,xunit=.8cm,yunit=.3cm,board={\psline[linewidth=4pt,linecolor=lightgray](0,-.25)(0,\arabic{gridgamerows}.25)}]{Hackenbushstring}{
+  R {\hackred{\hackedge}\rput(.5,0){\pscircle*{.15}}\rput(-.5,0){\pscircle*{.15}}}
+  B {\hackblue{\hackedge}\rput(.5,0){\pscircle*{.15}}\rput(-.5,0){\pscircle*{.15}}}
+  L {\hackblue{\hackedge}\rput(.5,0){\pscircle*{.15}}\rput(-.5,0){\pscircle*{.15}}}
+  G {\hackgreen{\hackedge}\rput(.5,0){\pscircle*{.15}}\rput(-.5,0){\pscircle*{.15}}}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TOPPLING DOMINOES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\DOMINO#1#2#3{\pspolygon#1[#3](-.2,-.5)(-.2,.3)(0,.5)(0,-.5)%
+              \pspolygon#1[#3](0,-.5)(0,.5)(.2,.5)(.2,-.5)%
+              {\psset{linewidth=2pt}}{\psline[#2](0,0)(-.2,-.1)}
+}
+\newgridgame[xunit=.3cm,yunit=.6cm,%
+         board={\psline[linewidth=3pt,linecolor=lightgray](0,0)(\arabic{gridgamecols},0)},square=%
+         %square={\psline[linewidth=3pt,linecolor=lightgray](0,0)(1,0)}%
+        ]%
+        {TopplingDominoes}{
+          x {\ifgridgamecolor\DOMINO{}{}{fillcolor=blue,fillstyle=solid}\else\DOMINO{*}{linecolor=white}{}\fi}
+          L {\ifgridgamecolor\DOMINO{}{}{fillcolor=blue,fillstyle=solid}\else\DOMINO{*}{linecolor=white}{}\fi}
+          o {\ifgridgamecolor\DOMINO{}{}{fillcolor=red,fillstyle=solid}\else\DOMINO{}{}{}\fi}
+          R {\ifgridgamecolor\DOMINO{}{}{fillcolor=red,fillstyle=solid}\else\DOMINO{}{}{}\fi}
+          G {\ifgridgamecolor\DOMINO{}{}{fillcolor=green,fillstyle=solid}\else\DOMINO{}{}{fillcolor=lightgray,fillstyle=solid}\fi}
+        }
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% HEX
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\HexHexagon{\rput(0,0){\psline(-.666666,0)(-.333333,1)(.333333,1)(.666666,0)(.3333333,-1)(-.3333333,-1)(-.666666,0)}}
+\def\HexBlack{\rput(0,0){\pscircle*{.5}}}
+\def\HexWhite{\rput(0,0){\pscircle{.5}}\rput(0,0){\pscircle{.2}}}
+\newlength{\Hexunit}
+\setlength{\Hexunit}{.125cm}
+\newgridgame[square=,runit=1.3\Hexunit,xunit=1.73206\Hexunit,yunit=1\Hexunit]{Hex}{
+  o {\HexHexagon}
+  * {\HexHexagon}
+  L {\HexBlack}
+  R {\HexWhite}
+  X {\HexHexagon\HexBlack}
+  O {\HexHexagon\HexWhite}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% MAZE and MAIZE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newgridgame[square=,unit=.2cm,shrink=true]{Maze}{
+  L {$\L$} R {$\R$} N {$\N$} P {$\P$}
+  o {}
+  * {\psline(-.05,-.05)(.05,.05)\psline(-.05,.05)(.05,-.05)}
+  x {\pscircle{.8}\rput(0,0){\rput(0,0){$\star$}}}
+  / {\psline(-1,-1)(1,1)}
+  | {\psline(-1,1)(1,-1)}
+}
+\newgridgame[square=,unit=.2cm,shrink=true]{Maize}{
+  L {$\L$} R {$\R$} N {$\N$} P {$\P$}
+  o {}
+  * {\psline(-.05,-.05)(.05,.05)\psline(-.05,.05)(.05,-.05)}
+  x {\pscircle{.8}\pscircle*{.1}}
+  / {\psline(-1,-1)(1,1)}
+  | {\psline(-1,1)(1,-1)}
+}
+

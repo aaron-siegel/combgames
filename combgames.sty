@@ -1,0 +1,84 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% combgames.sty
+%    @author Raymond Chen
+%    @author David Wolfe   (davidgameswolfe@gmail.com)
+%    @author Aaron Siegel  (aaron.n.siegel@gmail.com)
+%    PLEASE SUGGEST IMPROVEMENTS
+%    - Fix BUGS (see below)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TODO:  option to rotate (particularly for, say, Hackenbush strings)
+%        make the dottedline settable?  i.e., dotted=[linestyle=dashed,dash=1.5pt 1.5pt]
+% Exploit \newpsstyle and \newpsobject
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% BUG:  Haven't figured out how to insert the appropriate \uppercase
+% BUG:  Under certain conditions ^ in domineering is not matched.  Don't know why,
+%       so I suspect other subtle logic problems having to do with catcodes.
+%       (Problem appears in math mode, but disappears in a \Game.)
+% BUG:  Two ^'s in a row cause a poblem for \domineering
+% BUG:  SCOPING SLIGHTLY STRANGE.  For instance, \gridgameset obliterates a previous \gridgameset.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand\cgversion{1.0}
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{combgames}[2007/04/01]
+\message{`Combgames' v\cgversion, 2007/04/01 }
+
+\newif\ifcg@legacy\cg@legacyfalse
+\DeclareOption{legacy}{\cg@legacytrue}
+\ProcessOptions\relax
+
+\RequirePackage{calc}
+\RequirePackage{pstricks}
+\RequirePackage{pst-node}
+\RequirePackage{pst-plot}
+\RequirePackage{pst-xkey}
+
+\input cg-base
+\input cg-sym
+\input cg-tree
+\input cg-board
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                                                          %%
+%%                  Legacy Compatibility                    %%
+%%                                                          %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\ifcg@legacy
+\newcommand\Up{\cgup}
+\newcommand\Down{\cgdown}
+\newcommand\Upup{\cgdoubleup}
+\newcommand\Downdown{\cgdoubledown}
+\newcommand\Neg{\cgneg}
+\newcommand\Star{\cgstar}
+\newcommand\Uuparrow{\cgtripleup}
+\newcommand\Ddownarrow{\cgtripledown}
+\newcommand\UUparrow{\cgquadup}
+\newcommand\DDownarrow{\cgquaddown}
+\newcommand\Tinychar{\cgtiny}
+\newcommand\Minychar{\cgminy}
+\newcommand\fuzzy{\cgfuzzy}
+\newcommand\lfuz{\cglfuz}
+\newcommand\rfuz{\cggfuz}
+\newcommand\gfuz{\cggfuz}
+\newcommand\upsum{\cgupsum}
+\newcommand\downsum{\cgdownsum}
+\newcommand\ko{\cgko}
+\newcommand\Ko{\cgKo}
+\newcommand\farstar{\cgfarstar}
+\newcommand\loony{\cgloony}
+\newcommand\sunny{\cgsunny}
+\newcommand\kobar{\cgkobar}
+\newcommand\Kobar{\cgKobar}
+\newcommand\Tiny[1]{\cgtiny_{#1}}
+\newcommand\Miny[1]{\cgminy_{#1}}
+\newcommand\UpN[1]{\cgups{#1}}
+\newcommand\DownN[1]{\cgdowns{#1}}
+\def\game{\combgame}
+\def\Game#1#2{\combgame*{\{#1\cgslash#2\}}}
+\def\Bar{\cgslash}
+\def\BBar{\cgsslash}
+\def\BBBar{\cgslashes{3}}
+\def\BarN{\cgslashes}
+\fi

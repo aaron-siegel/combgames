@@ -1,0 +1,204 @@
+\ProvidesFile{cg-base.tex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                                                          %%
+%%              Raymond Chen's Game Builder                 %%
+%%                  (somewhat altered)                      %%
+%%                                                          %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% The \combgame macro takes as its argument the description of a game.
+% It measures the size of the contents and scales all the slashes
+% inside to the proper size.
+%
+% This makes eight passes over the input argument.
+%
+% For each of the four typestyles...
+%
+%   Typeset the argument in that style.
+%   Set \cg@gamebox to an empty box with the height and depth of the game.
+%       (During this first pass, \ifcg@drawbars is \iffalse.)
+%   If we are in display style, set \cg@extension to the size of the
+%       delimiter extension.  (If not, then set it to zero.)
+%   Typeset the game proper, setting \ifcg@drawbars to \iftrue.
+%
+% This macro requires cooperation from the \cgslash, \cgsslash, etc. macros.
+
+\newmuskip\cgslashmuskip
+\cgslashmuskip=-2mu
+\newlength\cgslashextension
+\setlength\cgslashextension{1.5pt}
+
+\def\cg@slashskip{\mskip\cgslashmuskip}
+
+\newif\ifcg@star
+\newif\ifcg@building\cg@buildingfalse
+\newif\ifcg@drawbars\cg@drawbarsfalse
+\newbox\cg@gamebox\setbox\cg@gamebox=\null
+\newdimen\cg@extension
+\newcounter{cg@readbarctr}
+
+\newcommand\combgame{%
+  \begingroup%
+  \catcode`\|=\active%
+  \cg@definebars%
+  \@ifstar{\cg@startrue\cg@combgame}{\cg@starfalse\cg@combgame}%
+}
+
+\def\cg@combgame#1{%
+  \mathpalette\cg@buildgame{#1}%
+  \endgroup%
+}
+
+\def\cg@buildgame#1#2{%
+    \begingroup%
+    \cg@buildingtrue%
+    \ifx#1\displaystyle%
+      \ifcg@star%
+        \cg@extension=0pt%
+      \else%
+        \cg@extension=\the\cgslashextension%
+      \fi%
+    \fi%
+    \cg@drawbarsfalse%
+    \setbox\z@\hbox{$#1#2$}%
+    \ht\cg@gamebox\ht\z@%
+    \dp\cg@gamebox\dp\z@%
+    \cg@drawbarstrue%
+    #1{#2}%
+    \cg@buildingfalse%
+    \endgroup%
+}
+
+\begingroup
+\catcode`\|=\active
+\gdef\cg@definebars{%
+  \def|{\setcounter{cg@readbarctr}{1}\cg@readbars}%
+  \def\{{\left\lbrace}
+  \def\}{\right\rbrace}
+}
+\gdef\cg@readbars{%
+  \@ifnextchar|{\stepcounter{cg@readbarctr}\cg@readnextbar}{\cgslashes{\thecg@readbarctr}}%
+}
+\gdef\cg@readnextbar|{\cg@readbars}
+\endgroup
+
+\newcommand\cgslash{\cgslashes{1}}
+\newcommand\cgsslash{\cgslashes{2}}
+
+\newcommand\cgslashes[2][]{%
+  \ifcg@building
+    \ifcg@drawbars
+        \mathrel
+        {\hbox{$%
+    %% This part is deadly because \left and \right create implicit
+    %% grouping.
+        \toks\z@{}%
+        \cg@loopmbars{#2}{\global\toks\z@\expandafter{\the\toks\z@\cg@mbarshelper}}%
+        \def\cg@mbarshelper{\left\vert\mskip\cgslashmuskip}\the\toks\z@
+            \mskip-\cgslashmuskip
+            \@tempcnta#2\relax \advance\@tempcnta\m@ne
+            \raise\@tempcnta\cg@extension\copy\cg@gamebox
+            \lower\@tempcnta\cg@extension\copy\cg@gamebox
+        \gdef\cg@mbarshelper{\right.}\the\toks\z@\n@space$}}%
+    \else\mathrel\vert\fi
+  \else
+    \cg@badbar
+  \fi
+}
+
+\def\cg@loopmbars#1#2{
+    \@tempcnta#1\relax
+    \loop
+        #2%
+        \advance\@tempcnta\m@ne
+        \ifnum\@tempcnta>\z@
+    \repeat
+}
+
+\def\cg@badbar{\errmessage{cgslash commands may only be used inside a combgame command.}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                                                          %%
+%%                      Thermographs                        %%
+%%                                                          %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\define@key[cgk]{thermoplot}{left}{\def\cg@plot@left{#1}}
+\define@key[cgk]{thermoplot}{right}{\def\cg@plot@right{#1}}
+\define@key[cgk]{thermoplot}{top}{\def\cg@plot@top{#1}}
+\define@key[cgk]{thermoplot}{bottom}{\def\cg@plot@bottom{#1}}
+\define@key[cgk]{thermoplot}{tickspacing}{\def\cg@plot@tickspacing{#1}}
+\define@key[cgk]{thermoplot}{scale}{\def\cg@plot@scale{#1}}
+\define@key[cgk]{thermoplot}{axescolor}{\def\cg@plot@axescolor{#1}}
+\define@key[cgk]{thermoplot}{clipmargin}{\def\cg@plot@clipmargin{#1}}
+\define@key[cgk]{thermoplot}{baseline}{\def\cg@plot@baseline{#1}}
+\define@key[cgk]{thermograph}{linecolor}{\def\cg@therm@linecolor{#1}}
+\define@key[cgk]{thermograph}{linestyle}{\def\cg@therm@linestyle{#1}}
+\define@key[cgk]{thermograph}{displ}{\def\cg@therm@displ{#1}}
+
+\newlength\cg@xorigin
+\newlength\cg@yorigin
+\newlength\cg@xsize
+\newlength\cg@ysize
+\newlength\cg@vcoord
+\newlength\cg@tcoord
+
+\newenvironment{thermoplot}[1][]{%
+  \setkeys[cgk]{thermoplot}{left=2,right=-2,top=4,bottom=0,scale=1cm,axescolor=gray,clipmargin=6pt,baseline=0.0,tickspacing=1}%
+  \setkeys[cgk]{thermoplot}{#1}%
+  \setlength\cg@xorigin{\cg@plot@scale*\cg@plot@left}%
+  \setlength\cg@yorigin{-\cg@plot@scale*\cg@plot@bottom}%
+  \setlength\cg@xsize{\cg@plot@scale*\cg@plot@left-\cg@plot@scale*\cg@plot@right}%
+  \setlength\cg@ysize{\cg@plot@scale*\cg@plot@top-\cg@plot@scale*\cg@plot@bottom}%
+  \psset{xunit=-\cg@plot@scale,yunit=\cg@plot@scale}%
+  \begin{pspicture}(\the\cg@xsize,\the\cg@ysize)%
+  {\color{\cg@plot@axescolor}%
+   \renewcommand\pshlabel[1]{##1}%
+   \psaxes[linecolor=\cg@plot@axescolor,Dx=-\cg@plot@tickspacing,Dy=\cg@plot@tickspacing,subticks=\cg@plot@tickspacing](\the\cg@xorigin,\the\cg@yorigin)(0,0)(\the\cg@xsize,\the\cg@ysize)}%
+  \addtolength{\cg@xsize}{\cg@plot@clipmargin}\addtolength{\cg@ysize}{\cg@plot@clipmargin}%
+  \psclip{\psframe[linecolor=white](-\cg@plot@clipmargin,-\cg@plot@clipmargin)(\the\cg@xsize,\the\cg@ysize)}%
+}{%
+  \endpsclip
+  \end{pspicture}%
+}%
+\newcommand\trajectory[1][]{%
+  \setkeys[cgk]{thermograph}{linecolor=black,linestyle=solid,displ=0pt}%
+  \setkeys[cgk]{thermograph}{#1}%
+  \def\cg@coords{{<-}}%
+  \cg@readcoordsfortrajectory%
+}
+\newcommand\thermograph[2][]{%
+  \setkeys[cgk]{thermograph}{linecolor=black,linestyle=solid,displ=0pt}%
+  \setkeys[cgk]{thermograph}{#1}%
+  \def\cg@therm@mast{#2}%
+  \cg@starttrajectory%
+  }
+\def\cg@starttrajectory{%
+  \cg@setvcoord{\cg@therm@mast}%
+  \cg@settcoord{\cg@plot@top}%
+  \addtolength{\cg@vcoord}{\cg@therm@displ}%
+  \edef\cg@coords{{<-}(\the\cg@vcoord,\the\cg@tcoord)}%
+  \cg@readcoordsfortrajectory%
+}
+\def\cg@readcoordsfortrajectory{%
+  \@ifnextchar(\cg@readcoord%
+    {\expandafter\cg@trajectoryline\cg@coords\cg@readnexttrajectory}%
+}
+\def\cg@trajectoryline{\psline[linecolor=\cg@therm@linecolor,linestyle=\cg@therm@linestyle]}
+\def\cg@readcoord(#1,#2){%
+  \cg@setvcoord{#1}%
+  \cg@settcoord{#2}%
+  \addtolength{\cg@vcoord}{\cg@therm@displ}%
+  \edef\cg@coords{\cg@coords(\the\cg@vcoord,\the\cg@tcoord)}%
+  \cg@readcoordsfortrajectory%
+}
+\def\cg@settcoord#1{%
+  \setlength\cg@tcoord{\cg@plot@scale*#1-\cg@plot@scale*\cg@plot@bottom}%
+}
+\def\cg@setvcoord#1{%
+  \setlength\cg@vcoord{\cg@plot@scale*\cg@plot@left-\cg@plot@scale*#1}%
+}
+\def\cg@readnexttrajectory{\@ifnextchar;{\cg@eatsemicolon}{}}
+\def\cg@eatsemicolon;{\cg@starttrajectory}
+

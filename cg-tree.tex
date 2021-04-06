@@ -1,0 +1,223 @@
+\ProvidesFile{cg-tree.tex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                                                          %%
+%%                      Game Trees                          %%
+%%                                                          %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Some rather complicated logic for an analogue of \futurelet that skips over spaces:
+
+\def\cg@fletnosp#1#2{\def\@tempa{#1}\def\@tempb{#2}\futurelet\@tempc\cg@fletnosp@}
+\def\cg@fletnosp@{\ifx\@tempc\@sptoken\let\@tempd\cg@fletnosp@@\else\expandafter\let\@tempa\@tempc\let\@tempd\@tempb\fi\@tempd}
+{\def\:{\cg@fletnosp@@} \expandafter\gdef\: {\futurelet\@tempc\cg@fletnosp@}}
+
+\define@key[cgk]{cgtree}{arrows}{\def\cg@tree@arrows{#1}}
+\define@key[cgk]{cgtree}{unit}{\def\cg@tree@unit{#1}}
+\define@key[cgk]{cgtree}{nodesep}{\def\cg@tree@nodesep{#1}}
+\define@boolkey[cgk]{cgtree}{labels}[false]{}
+
+\define@key[cgk]{cgnode}{arrow}{\def\cg@node@arrow{#1}}
+\define@key[cgk]{cgnode}{sep}{\def\cg@node@sep{#1}}
+\define@key[cgk]{cgnode}{name}{\def\cg@node@name{#1}}
+\define@boolkey[cgk]{cgnode}{ko}[true]{}
+\define@boolkey[cgk]{cgnode}{pass}[true]{}
+
+\newcounter{cg@nextnodeord}  % Global node ordinal counter for default names
+
+\newcommand\cgtree[2][]{{
+  \setkeys[cgk]{cgtree}{arrows=-,nodesep=.75ex,unit=1cm}
+  \setkeys[cgk]{cgtree}{#1}
+  
+  % First pass to calculate boundaries
+  \cg@gtinit%
+  \let\cg@gtdonode\cg@gtcalcmax%
+  \let\cg@gtdoline\relax%
+  \cg@gtprocessnode#2\cg@gtend%
+  %
+  % Second pass to draw!
+  \cg@gtinit%
+  \let\cg@gtdonode\cg@gtshow%
+  \let\cg@gtdoline\cg@gtdrawline%
+  \cg@gtprocessnode#2\cg@gtend%
+}}
+\newcommand\cgtreet[2][]{{%
+  \setkeys[cgk]{cgtree}{arrows=->,nodesep=.75ex,unit=1cm,labels=false}%
+  \setkeys[cgk]{cgtree}{#1}%
+  %
+  % First pass to calculate boundaries
+  \setcounter{cg@gtxmin}{0}\setcounter{cg@gtxmax}{0}\setcounter{cg@gtymin}{0}\setcounter{cg@gtymax}{0}%
+  \cg@gtinit%
+  \let\cg@gtdonode\cg@gtcalcmax%
+  \let\cg@gtdoline\relax%
+  \cg@gtprocessnode#2\cg@gtend%
+  %
+  % Second pass to draw!
+  \cg@gtinit%
+  \let\cg@gtdonode\cg@gtshow%
+  \let\cg@gtdoline\cg@gtdrawline%
+  \setlength{\cg@gtxminlen}{\thecg@gtxmin\psxunit-0.5\psxunit}%
+  \setlength{\cg@gtxmaxlen}{\thecg@gtxmax\psxunit+0.5\psxunit}%
+  \setlength{\cg@gtyminlen}{\thecg@gtymin\psyunit-0.5\psyunit}%
+  \setlength{\cg@gtymaxlen}{\thecg@gtymax\psyunit+0.5\psyunit}%
+  \begin{pspicture}[shift=\cg@gtyminlen](\cg@gtxminlen,\cg@gtyminlen)(\cg@gtxmaxlen,\cg@gtymaxlen)
+  \cg@gtprocessnode#2\cg@gtend%
+  \end{pspicture}%
+}}
+
+\newcounter{cg@gtxmin}
+\newcounter{cg@gtxmax}
+\newcounter{cg@gtymin}
+\newcounter{cg@gtymax}
+\newlength{\cg@gtxminlen}
+\newlength{\cg@gtyminlen}
+\newlength{\cg@gtxmaxlen}
+\newlength{\cg@gtymaxlen}
+\newcount\cg@gtx
+\newcount\cg@gty
+\newcount\cg@gtnextx
+\newcount\cg@gtnexty
+\newcount\cg@gtparentx
+\newcount\cg@gtparenty
+\newcount\cg@gtxadjustment
+\newlength\cg@gthalfunit
+
+\def\cg@gtinit{
+  \cg@gtx=0
+  \cg@gty=0
+  \cg@gtnextx=0
+  \cg@gtnexty=0
+  \cg@gtparentx=0
+  \cg@gtparenty=0
+  \cg@gtxadjustment=0
+  \newif\ifcg@gtleft
+  \def\cg@node@psep{0pt}
+  \def\cg@node@pname{none}
+  \psset{unit=\cg@tree@unit,nrot=:U}
+  \setlength\cg@gthalfunit{\cg@tree@unit/2}
+}
+
+\def\cg@gtend{@@@ENDCGTREE@@@}
+
+\def\cg@gtprocessnode#1{\@ifnextchar[{\cg@gtprocessnode@{#1}}{\cg@gtprocessnode@{#1}[]}}
+\def\cg@gtprocessnode@#1[#2]{
+  \stepcounter{cg@nextnodeord}
+  \setkeys[cgk]{cgnode}{arrow=\cg@tree@arrows,sep=\cg@tree@nodesep,ko=false,pass=false,name=cggt\arabic{cg@nextnodeord}}
+  \ifx.\cg@gtnextchar\def\cg@node@sep{0pt}\fi   % Override default for empty entry
+  \setkeys[cgk]{cgnode}{#2}
+  \ifx:\cg@gtnextchar
+    % Symbolic link: don't change nextx/nexty OR render the node OR try a subtree.
+    \let\next=\cg@gtprocesschar
+  \else
+    \ifcgk@cgnode@ko
+      \cg@gtx=\the\cg@gtparentx
+      \cg@gty=\the\cg@gtparenty
+      \advance\cg@gtx by \ifcg@gtleft-\fi \the\cg@gtxadjustment
+      \advance\cg@gtx by\ifcg@gtleft -3\else 3\fi
+    \else
+      \cg@gtx=\the\cg@gtnextx
+      \cg@gty=\the\cg@gtnexty
+      \advance\cg@gtx by \ifcg@gtleft-\fi \the\cg@gtxadjustment
+      \cg@gtnextx=\the\cg@gtx
+      \advance\cg@gtnextx by \ifcg@gtleft -2\else 2\fi
+    \fi
+    \cg@gtdonode{\ifx.\cg@gtnextchar\else#1\fi}
+    \let\next=\cg@gttrysubtree
+    \cg@gtxadjustment=0
+  \fi
+  \cg@gtdoline
+  \next
+}
+
+\def\cg@gttrysubtree{
+  \@ifnextchar({\cg@gtstartsubtree}{\cg@gtprocesschar}
+}
+
+\def\cg@gtstartsubtree({
+  \begingroup
+  \cg@gtparentx=\the\cg@gtx
+  \cg@gtparenty=\the\cg@gty
+  \cg@gtnextx=\the\cg@gtparentx
+  \cg@gtnexty=\the\cg@gtparenty
+  \advance\cg@gtnextx by -1
+  \advance\cg@gtnexty by -2
+  \cg@gtlefttrue
+  \edef\cg@node@psep{\cg@node@sep}
+  \edef\cg@node@pname{\cg@node@name}
+  \cg@gtprocesschar
+}
+
+\def\cg@gtprocesschar{\cg@fletnosp\cg@gtnextchar\cg@gtprocesschar@}
+\def\cg@gtprocesschar@#1{
+  \ifx\cg@gtend\cg@gtnextchar
+    \let\next=\relax
+  \else\ifx(\cg@gtnextchar
+    \errmessage{Unexpected (}
+  \else\ifx|\cg@gtnextchar
+    \ifcg@gtleft
+      \cg@gtleftfalse
+      \cg@gtnextx=\the\cg@gtparentx
+      \cg@gtnexty=\the\cg@gtparenty
+      \advance\cg@gtnextx by 1
+      \advance\cg@gtnexty by -2
+      \let\next=\cg@gtprocesschar
+    \else\errmessage{Extra | in gametree description.}
+    \fi
+  \else\ifx+\cg@gtnextchar
+    \advance\cg@gtxadjustment by 1
+    \let\next=\cg@gtprocesschar
+  \else\ifx-\cg@gtnextchar
+    \advance\cg@gtxadjustment by -1
+    \let\next=\cg@gtprocesschar
+  \else\ifx)\cg@gtnextchar
+    \ifcg@gtleft\errmessage{Missing | in gametree description.}
+    \else
+      \let\next=\cg@gtendsubtree
+    \fi
+  \else
+    \def\next{\cg@gtprocessnode{#1}}
+  \fi\fi\fi\fi\fi\fi
+  \next
+}
+
+\def\cg@gtendsubtree{
+  \endgroup\cg@gtprocesschar
+}
+
+\def\cg@gtcalcmax#1{
+  \ifnum \the\cg@gtx < \thecg@gtxmin
+    \setcounter{cg@gtxmin}{\the\cg@gtx}
+  \fi
+  \ifnum \the\cg@gtx > \thecg@gtxmax
+    \setcounter{cg@gtxmax}{\the\cg@gtx}
+  \fi
+  \ifnum \the\cg@gty < \thecg@gtymin
+    \setcounter{cg@gtymin}{\the\cg@gty}
+  \fi
+  \ifnum \the\cg@gty > \thecg@gtymax
+    \setcounter{cg@gtymax}{\the\cg@gty}
+  \fi
+}
+
+\def\cg@gtshow#1{
+  \rput(\the\cg@gtx,\the\cg@gty)
+    {\expandafter\rnode{\cg@node@name}{$#1$}}
+}
+
+\def\cg@gtdrawline{{
+  \psset{arrows=\cg@node@arrow,nodesepA=\cg@node@psep,nodesepB=\cg@node@sep,nodesep=\cg@node@sep}
+  \ifcgk@cgnode@ko
+    \ifcg@gtleft\def\cg@gtangle{20}\else\def\cg@gtangle{-20}\fi
+    \ncarc[arcangleA=\cg@gtangle,arcangleB=\cg@gtangle]{\cg@node@pname}{\cg@node@name}
+  \else\ifcgk@cgnode@pass
+    \ifcg@gtleft\def\cg@gtangle{90}\else\def\cg@gtangle{-90}\fi
+    \nccircle[angleA=\cg@gtangle]{\cg@node@pname}{\cg@gthalfunit}
+  \else
+    \ncline{\cg@node@pname}{\cg@node@name}
+  \fi\fi
+  \ifcgk@cgtree@labels
+    \naput{\ifcg@gtleft L\else R\fi}
+  \fi
+}}
+
+
