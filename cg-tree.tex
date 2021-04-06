@@ -26,9 +26,9 @@
 \newcounter{cg@nextnodeord}  % Global node ordinal counter for default names
 
 \newcommand\cgtree[2][]{{
-  \setkeys[cgk]{cgtree}{arrows=-,nodesep=.75ex,unit=1cm}
-  \setkeys[cgk]{cgtree}{#1}
-  
+  \setkeys[cgk]{cgtree}{arrows=-,nodesep=.75ex,unit=1cm,labels=false}%
+  \setkeys[cgk]{cgtree}{#1}%
+  %
   % First pass to calculate boundaries
   \cg@gtinit%
   \let\cg@gtdonode\cg@gtcalcmax%
@@ -39,7 +39,9 @@
   \cg@gtinit%
   \let\cg@gtdonode\cg@gtshow%
   \let\cg@gtdoline\cg@gtdrawline%
+  \begin{tikzpicture}[x=\cg@tree@unit,y=\cg@tree@unit]
   \cg@gtprocessnode#2\cg@gtend%
+  \end{tikzpicture}
 }}
 \newcommand\cgtreet[2][]{{%
   \setkeys[cgk]{cgtree}{arrows=->,nodesep=.75ex,unit=1cm,labels=false}%
@@ -91,9 +93,11 @@
   \cg@gtparenty=0
   \cg@gtxadjustment=0
   \newif\ifcg@gtleft
+  \newif\ifcg@gtroot
+  \cg@gtroottrue
   \def\cg@node@psep{0pt}
   \def\cg@node@pname{none}
-  \psset{unit=\cg@tree@unit,nrot=:U}
+%  \psset{unit=\cg@tree@unit,nrot=:U}
   \setlength\cg@gthalfunit{\cg@tree@unit/2}
 }
 
@@ -121,11 +125,12 @@
       \cg@gtnextx=\the\cg@gtx
       \advance\cg@gtnextx by \ifcg@gtleft -2\else 2\fi
     \fi
-    \cg@gtdonode{\ifx.\cg@gtnextchar\else#1\fi}
+    \cg@gtdonode{#1}
     \let\next=\cg@gttrysubtree
     \cg@gtxadjustment=0
   \fi
   \cg@gtdoline
+  \cg@gtrootfalse
   \next
 }
 
@@ -200,24 +205,52 @@
 }
 
 \def\cg@gtshow#1{
-  \rput(\the\cg@gtx,\the\cg@gty)
-    {\expandafter\rnode{\cg@node@name}{$#1$}}
+  \ifx.#1
+    \coordinate (\cg@node@name) at (\the\cg@gtx,\the\cg@gty);
+  \else
+    \draw (\the\cg@gtx,\the\cg@gty) node (\cg@node@name) {$#1$};
+  \fi
 }
 
 \def\cg@gtdrawline{{
-  \psset{arrows=\cg@node@arrow,nodesepA=\cg@node@psep,nodesepB=\cg@node@sep,nodesep=\cg@node@sep}
-  \ifcgk@cgnode@ko
-    \ifcg@gtleft\def\cg@gtangle{20}\else\def\cg@gtangle{-20}\fi
-    \ncarc[arcangleA=\cg@gtangle,arcangleB=\cg@gtangle]{\cg@node@pname}{\cg@node@name}
-  \else\ifcgk@cgnode@pass
-    \ifcg@gtleft\def\cg@gtangle{90}\else\def\cg@gtangle{-90}\fi
-    \nccircle[angleA=\cg@gtangle]{\cg@node@pname}{\cg@gthalfunit}
+  \ifcg@gtroot
+    % Root node - do nothing
   \else
-    \ncline{\cg@node@pname}{\cg@node@name}
-  \fi\fi
-  \ifcgk@cgtree@labels
-    \naput{\ifcg@gtleft L\else R\fi}
+    \ifcgk@cgnode@ko
+      \ifcg@gtleft
+        \def\cg@connect{to[bend left]}
+	  \else
+	    \def\cg@connect{to[bend right]}
+	  \fi
+	\else
+	  \def\cg@connect{--}
+	\fi
+	\ifcgk@cgtree@labels
+	  \def\cg@linelabel{\ifcg@gtleft L\else R\fi}
+	\else
+	  \def\cg@linelabel{}
+	\fi
+	\ifcgk@cgnode@pass
+	  \ifcg@gtleft
+        \draw [\cg@node@arrow] (\cg@node@pname.148) + (0.1,0) node[above] {\cg@linelabel} arc (40:320:0.6 and 0.42);
+      \else
+        \draw [\cg@node@arrow] (\cg@node@pname.-32) + (-0.1,0) node[above] {\cg@linelabel} arc (40:320:-0.6 and -0.42);
+      \fi
+    \else
+      \draw [\cg@node@arrow] (\cg@node@pname) \cg@connect node[above] {\cg@linelabel} (\cg@node@name);
+    \fi
   \fi
+ % \psset{arrows=\cg@node@arrow,nodesepA=\cg@node@psep,nodesepB=\cg@node@sep,nodesep=\cg@node@sep}
+ % \ifcgk@cgnode@ko
+ %   \ifcg@gtleft\def\cg@gtangle{20}\else\def\cg@gtangle{-20}\fi
+ %   \ncarc[arcangleA=\cg@gtangle,arcangleB=\cg@gtangle]{\cg@node@pname}{\cg@node@name}
+ % \else\ifcgk@cgnode@pass
+ %   \ifcg@gtleft\def\cg@gtangle{90}\else\def\cg@gtangle{-90}\fi
+ %   \nccircle[angleA=\cg@gtangle]{\cg@node@pname}{\cg@gthalfunit}
+ % \else
+ %   \ncline{\cg@node@pname}{\cg@node@name}
+ % \fi\fi
+ % \ifcgk@cgtree@labels
+ %   \naput{\ifcg@gtleft L\else R\fi}
+ % \fi
 }}
-
-
