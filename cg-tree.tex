@@ -43,29 +43,6 @@
   \cg@gtprocessnode#2\cg@gtend
   \end{tikzpicture}%
 }}
-\newcommand\cgtreet[2][]{{%
-  \setkeys[cgk]{cgtree}{arrows=->,nodesep=.75ex,unit=1cm,labels=false}%
-  \setkeys[cgk]{cgtree}{#1}%
-  %
-  % First pass to calculate boundaries
-  \setcounter{cg@gtxmin}{0}\setcounter{cg@gtxmax}{0}\setcounter{cg@gtymin}{0}\setcounter{cg@gtymax}{0}%
-  \cg@gtinit%
-  \let\cg@gtdonode\cg@gtcalcmax%
-  \let\cg@gtdoline\relax%
-  \cg@gtprocessnode#2\cg@gtend%
-  %
-  % Second pass to draw!
-  \cg@gtinit%
-  \let\cg@gtdonode\cg@gtshow%
-  \let\cg@gtdoline\cg@gtdrawline%
-  \setlength{\cg@gtxminlen}{\thecg@gtxmin\psxunit-0.5\psxunit}%
-  \setlength{\cg@gtxmaxlen}{\thecg@gtxmax\psxunit+0.5\psxunit}%
-  \setlength{\cg@gtyminlen}{\thecg@gtymin\psyunit-0.5\psyunit}%
-  \setlength{\cg@gtymaxlen}{\thecg@gtymax\psyunit+0.5\psyunit}%
-  \begin{pspicture}[shift=\cg@gtyminlen](\cg@gtxminlen,\cg@gtyminlen)(\cg@gtxmaxlen,\cg@gtymaxlen)
-  \cg@gtprocessnode#2\cg@gtend%
-  \end{pspicture}%
-}}
 
 \newcounter{cg@gtxmin}
 \newcounter{cg@gtxmax}
@@ -227,10 +204,8 @@
 	\ifcgk@cgnode@pass
 	  \ifcg@gtleft
 	    \cg@gtdrawline@{(\cg@node@pname.148) + (0.1,0)}{arc (40:320:0.6 and 0.42)}
-        %\draw [\cg@node@arrow] (\cg@node@pname.148) + (0.1,0) node[above] {\cg@linelabel} arc (40:320:0.6 and 0.42);
       \else
         \cg@gtdrawline@{(\cg@node@pname.-32) + (-0.1,0)}{arc (40:320:-0.6 and -0.42)}
-        %\draw [\cg@node@arrow] (\cg@node@pname.-32) + (-0.1,0) node[above] {\cg@linelabel} arc (40:320:-0.6 and -0.42);
       \fi
     \else
       \ifcgk@cgnode@ko
@@ -243,24 +218,8 @@
 	    \def\cg@connect{--}
 	  \fi
       \cg@gtdrawline@{(\cg@node@pname) \cg@connect}{(\cg@node@name)}
-      %\edef\cg@bracketed@node@arrow{[\cg@node@arrow]}
-      %\expandafter\cg@gtdrawline@\cg@bracketed@node@arrow{(\cg@node@pname) \cg@connect node[above] {\cg@linelabel} (\cg@node@name);}
-      %\draw [\cg@node@arrow] (\cg@node@pname) \cg@connect node[above] {\cg@linelabel} (\cg@node@name);
     \fi
   \fi
- % \psset{arrows=\cg@node@arrow,nodesepA=\cg@node@psep,nodesepB=\cg@node@sep,nodesep=\cg@node@sep}
- % \ifcgk@cgnode@ko
- %   \ifcg@gtleft\def\cg@gtangle{20}\else\def\cg@gtangle{-20}\fi
- %   \ncarc[arcangleA=\cg@gtangle,arcangleB=\cg@gtangle]{\cg@node@pname}{\cg@node@name}
- % \else\ifcgk@cgnode@pass
- %   \ifcg@gtleft\def\cg@gtangle{90}\else\def\cg@gtangle{-90}\fi
- %   \nccircle[angleA=\cg@gtangle]{\cg@node@pname}{\cg@gthalfunit}
- % \else
- %   \ncline{\cg@node@pname}{\cg@node@name}
- % \fi\fi
- % \ifcgk@cgtree@labels
- %   \naput{\ifcg@gtleft L\else R\fi}
- % \fi
 }}
 
 % This will produce an expanded tikz statement of the form:
@@ -269,6 +228,5 @@
   \edef\cg@bracketed@node@arrow{[\cg@node@arrow]}
   \def\@tempsp{ }
   \edef\@tempa{[\cg@node@arrow] #1 \@tempsp\cg@linelabel\@tempsp #2;}
-  \message{\@tempa}
   \expandafter\draw\@tempa
 }}
