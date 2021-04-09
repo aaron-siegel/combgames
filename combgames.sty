@@ -18,17 +18,20 @@
 % BUG:  SCOPING SLIGHTLY STRANGE.  For instance, \gridgameset obliterates a previous \gridgameset.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\newcommand\cgversion{1.0}
+\newcommand\cgversion{2.0}
+\newcommand\cgdate{2021/04/06}
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{combgames}[2007/04/01]
-\message{`Combgames' v\cgversion, 2007/04/01 }
+\ProvidesPackage{combgames}[\cgdate]
+\message{`combgames' v\cgversion, \cgdate }
 
 \newif\ifcg@legacy\cg@legacyfalse
 \DeclareOption{legacy}{\cg@legacytrue}
 \ProcessOptions\relax
 
 \RequirePackage{calc}
+\RequirePackage{xkeyval}
+\RequirePackage{tikz}
 
 \input cg-base
 \input cg-sym

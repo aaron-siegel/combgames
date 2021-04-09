@@ -25,7 +25,7 @@
 
 \newcounter{cg@nextnodeord}  % Global node ordinal counter for default names
 
-\newcommand\cgtree[2][]{{
+\newcommand\cgtree[2][]{{%
   \setkeys[cgk]{cgtree}{arrows=-,nodesep=.75ex,unit=1cm,labels=false}%
   \setkeys[cgk]{cgtree}{#1}%
   %
@@ -40,8 +40,8 @@
   \let\cg@gtdonode\cg@gtshow%
   \let\cg@gtdoline\cg@gtdrawline%
   \begin{tikzpicture}[x=\cg@tree@unit,y=\cg@tree@unit]
-  \cg@gtprocessnode#2\cg@gtend%
-  \end{tikzpicture}
+  \cg@gtprocessnode#2\cg@gtend
+  \end{tikzpicture}%
 }}
 \newcommand\cgtreet[2][]{{%
   \setkeys[cgk]{cgtree}{arrows=->,nodesep=.75ex,unit=1cm,labels=false}%
@@ -84,7 +84,7 @@
 \newcount\cg@gtxadjustment
 \newlength\cg@gthalfunit
 
-\def\cg@gtinit{
+\def\cg@gtinit{%
   \cg@gtx=0
   \cg@gty=0
   \cg@gtnextx=0
@@ -95,20 +95,19 @@
   \newif\ifcg@gtleft
   \newif\ifcg@gtroot
   \cg@gtroottrue
-  \def\cg@node@psep{0pt}
-  \def\cg@node@pname{none}
-%  \psset{unit=\cg@tree@unit,nrot=:U}
-  \setlength\cg@gthalfunit{\cg@tree@unit/2}
+  \def\cg@node@psep{0pt}%
+  \def\cg@node@pname{none}%
+  \setlength\cg@gthalfunit{\cg@tree@unit/2}%
 }
 
 \def\cg@gtend{@@@ENDCGTREE@@@}
 
 \def\cg@gtprocessnode#1{\@ifnextchar[{\cg@gtprocessnode@{#1}}{\cg@gtprocessnode@{#1}[]}}
-\def\cg@gtprocessnode@#1[#2]{
-  \stepcounter{cg@nextnodeord}
-  \setkeys[cgk]{cgnode}{arrow=\cg@tree@arrows,sep=\cg@tree@nodesep,ko=false,pass=false,name=cggt\arabic{cg@nextnodeord}}
+\def\cg@gtprocessnode@#1[#2]{%
+  \stepcounter{cg@nextnodeord}%
+  \setkeys[cgk]{cgnode}{arrow=\cg@tree@arrows,sep=\cg@tree@nodesep,ko=false,pass=false,name=cggt\arabic{cg@nextnodeord}}%
   \ifx.\cg@gtnextchar\def\cg@node@sep{0pt}\fi   % Override default for empty entry
-  \setkeys[cgk]{cgnode}{#2}
+  \setkeys[cgk]{cgnode}{#2}%
   \ifx:\cg@gtnextchar
     % Symbolic link: don't change nextx/nexty OR render the node OR try a subtree.
     \let\next=\cg@gtprocesschar
@@ -125,7 +124,7 @@
       \cg@gtnextx=\the\cg@gtx
       \advance\cg@gtnextx by \ifcg@gtleft -2\else 2\fi
     \fi
-    \cg@gtdonode{#1}
+    \cg@gtdonode{#1}%
     \let\next=\cg@gttrysubtree
     \cg@gtxadjustment=0
   \fi
@@ -134,11 +133,11 @@
   \next
 }
 
-\def\cg@gttrysubtree{
+\def\cg@gttrysubtree{%
   \@ifnextchar({\cg@gtstartsubtree}{\cg@gtprocesschar}
 }
 
-\def\cg@gtstartsubtree({
+\def\cg@gtstartsubtree({%
   \begingroup
   \cg@gtparentx=\the\cg@gtx
   \cg@gtparenty=\the\cg@gty
@@ -147,13 +146,13 @@
   \advance\cg@gtnextx by -1
   \advance\cg@gtnexty by -2
   \cg@gtlefttrue
-  \edef\cg@node@psep{\cg@node@sep}
-  \edef\cg@node@pname{\cg@node@name}
+  \edef\cg@node@psep{\cg@node@sep}%
+  \edef\cg@node@pname{\cg@node@name}%
   \cg@gtprocesschar
 }
 
 \def\cg@gtprocesschar{\cg@fletnosp\cg@gtnextchar\cg@gtprocesschar@}
-\def\cg@gtprocesschar@#1{
+\def\cg@gtprocesschar@#1{%
   \ifx\cg@gtend\cg@gtnextchar
     \let\next=\relax
   \else\ifx(\cg@gtnextchar
@@ -180,27 +179,27 @@
       \let\next=\cg@gtendsubtree
     \fi
   \else
-    \def\next{\cg@gtprocessnode{#1}}
+    \def\next{\cg@gtprocessnode{#1}}%
   \fi\fi\fi\fi\fi\fi
   \next
 }
 
-\def\cg@gtendsubtree{
+\def\cg@gtendsubtree{%
   \endgroup\cg@gtprocesschar
 }
 
-\def\cg@gtcalcmax#1{
+\def\cg@gtcalcmax#1{%
   \ifnum \the\cg@gtx < \thecg@gtxmin
-    \setcounter{cg@gtxmin}{\the\cg@gtx}
+    \setcounter{cg@gtxmin}{\the\cg@gtx}%
   \fi
   \ifnum \the\cg@gtx > \thecg@gtxmax
-    \setcounter{cg@gtxmax}{\the\cg@gtx}
+    \setcounter{cg@gtxmax}{\the\cg@gtx}%
   \fi
   \ifnum \the\cg@gty < \thecg@gtymin
-    \setcounter{cg@gtymin}{\the\cg@gty}
+    \setcounter{cg@gtymin}{\the\cg@gty}%
   \fi
   \ifnum \the\cg@gty > \thecg@gtymax
-    \setcounter{cg@gtymax}{\the\cg@gty}
+    \setcounter{cg@gtymax}{\the\cg@gty}%
   \fi
 }
 
@@ -216,28 +215,37 @@
   \ifcg@gtroot
     % Root node - do nothing
   \else
-    \ifcgk@cgnode@ko
-      \ifcg@gtleft
-        \def\cg@connect{to[bend left]}
-	  \else
-	    \def\cg@connect{to[bend right]}
-	  \fi
-	\else
-	  \def\cg@connect{--}
-	\fi
 	\ifcgk@cgtree@labels
-	  \def\cg@linelabel{\ifcg@gtleft L\else R\fi}
+	  \ifcg@gtleft
+	    \def\cg@linelabel{node[above] {L}}
+	  \else
+	    \def\cg@linelabel{node[above] {R}}
+	  \fi
 	\else
 	  \def\cg@linelabel{}
 	\fi
 	\ifcgk@cgnode@pass
 	  \ifcg@gtleft
-        \draw [\cg@node@arrow] (\cg@node@pname.148) + (0.1,0) node[above] {\cg@linelabel} arc (40:320:0.6 and 0.42);
+	    \cg@gtdrawline@{(\cg@node@pname.148) + (0.1,0)}{arc (40:320:0.6 and 0.42)}
+        %\draw [\cg@node@arrow] (\cg@node@pname.148) + (0.1,0) node[above] {\cg@linelabel} arc (40:320:0.6 and 0.42);
       \else
-        \draw [\cg@node@arrow] (\cg@node@pname.-32) + (-0.1,0) node[above] {\cg@linelabel} arc (40:320:-0.6 and -0.42);
+        \cg@gtdrawline@{(\cg@node@pname.-32) + (-0.1,0)}{arc (40:320:-0.6 and -0.42)}
+        %\draw [\cg@node@arrow] (\cg@node@pname.-32) + (-0.1,0) node[above] {\cg@linelabel} arc (40:320:-0.6 and -0.42);
       \fi
     \else
-      \draw [\cg@node@arrow] (\cg@node@pname) \cg@connect node[above] {\cg@linelabel} (\cg@node@name);
+      \ifcgk@cgnode@ko
+        \ifcg@gtleft
+          \def\cg@connect{to[bend left]}
+	    \else
+	      \def\cg@connect{to[bend right]}
+	    \fi
+	  \else
+	    \def\cg@connect{--}
+	  \fi
+      \cg@gtdrawline@{(\cg@node@pname) \cg@connect}{(\cg@node@name)}
+      %\edef\cg@bracketed@node@arrow{[\cg@node@arrow]}
+      %\expandafter\cg@gtdrawline@\cg@bracketed@node@arrow{(\cg@node@pname) \cg@connect node[above] {\cg@linelabel} (\cg@node@name);}
+      %\draw [\cg@node@arrow] (\cg@node@pname) \cg@connect node[above] {\cg@linelabel} (\cg@node@name);
     \fi
   \fi
  % \psset{arrows=\cg@node@arrow,nodesepA=\cg@node@psep,nodesepB=\cg@node@sep,nodesep=\cg@node@sep}
@@ -253,4 +261,14 @@
  % \ifcgk@cgtree@labels
  %   \naput{\ifcg@gtleft L\else R\fi}
  % \fi
+}}
+
+% This will produce an expanded tikz statement of the form:
+% \draw [\cg@node@arrow] #1 \cg@linelabel #2;
+\def\cg@gtdrawline@#1#2{{
+  \edef\cg@bracketed@node@arrow{[\cg@node@arrow]}
+  \def\@tempsp{ }
+  \edef\@tempa{[\cg@node@arrow] #1 \@tempsp\cg@linelabel\@tempsp #2;}
+  \message{\@tempa}
+  \expandafter\draw\@tempa
 }}
