@@ -12,12 +12,12 @@
 \def\cg@fletnosp@{\ifx\@tempc\@sptoken\let\@tempd\cg@fletnosp@@\else\expandafter\let\@tempa\@tempc\let\@tempd\@tempb\fi\@tempd}
 {\def\:{\cg@fletnosp@@} \expandafter\gdef\: {\futurelet\@tempc\cg@fletnosp@}}
 
-\define@key[cgk]{cgtree}{arrows}{\def\cg@tree@arrows{#1}}
+\define@key[cgk]{cgtree}{linestyle}{\def\cg@tree@linestyle{#1}}
 \define@key[cgk]{cgtree}{unit}{\def\cg@tree@unit{#1}}
 \define@key[cgk]{cgtree}{nodesep}{\def\cg@tree@nodesep{#1}}
 \define@boolkey[cgk]{cgtree}{labels}[false]{}
 
-\define@key[cgk]{cgnode}{arrow}{\def\cg@node@arrow{#1}}
+\define@key[cgk]{cgnode}{linestyle}{\def\cg@node@linestyle{#1}}
 \define@key[cgk]{cgnode}{sep}{\def\cg@node@sep{#1}}
 \define@key[cgk]{cgnode}{name}{\def\cg@node@name{#1}}
 \define@boolkey[cgk]{cgnode}{ko}[true]{}
@@ -26,7 +26,7 @@
 \newcounter{cg@nextnodeord}  % Global node ordinal counter for default names
 
 \newcommand\cgtree[2][]{{%
-  \setkeys[cgk]{cgtree}{arrows=-,nodesep=.75ex,unit=1cm,labels=false}%
+  \setkeys[cgk]{cgtree}{linestyle=-,nodesep=.75ex,unit=1cm,labels=false}%
   \setkeys[cgk]{cgtree}{#1}%
   %
   % First pass to calculate boundaries
@@ -82,7 +82,7 @@
 \def\cg@gtprocessnode#1{\@ifnextchar[{\cg@gtprocessnode@{#1}}{\cg@gtprocessnode@{#1}[]}}
 \def\cg@gtprocessnode@#1[#2]{%
   \stepcounter{cg@nextnodeord}%
-  \setkeys[cgk]{cgnode}{arrow=\cg@tree@arrows,sep=\cg@tree@nodesep,ko=false,pass=false,name=cggt\arabic{cg@nextnodeord}}%
+  \setkeys[cgk]{cgnode}{linestyle=\cg@tree@linestyle,sep=\cg@tree@nodesep,ko=false,pass=false,name=cggt\arabic{cg@nextnodeord}}%
   \ifx.\cg@gtnextchar\def\cg@node@sep{0pt}\fi   % Override default for empty entry
   \setkeys[cgk]{cgnode}{#2}%
   \ifx:\cg@gtnextchar
@@ -223,10 +223,10 @@
 }}
 
 % This will produce an expanded tikz statement of the form:
-% \draw [\cg@node@arrow] #1 \cg@linelabel #2;
+% \draw [\cg@node@linestyle] #1 \cg@linelabel #2;
 \def\cg@gtdrawline@#1#2{{
-  \edef\cg@bracketed@node@arrow{[\cg@node@arrow]}
+  \edef\cg@bracketed@node@linestyle{[\cg@node@linestyle]}
   \def\@tempsp{ }
-  \edef\@tempa{[\cg@node@arrow] #1 \@tempsp\cg@linelabel\@tempsp #2;}
+  \edef\@tempa{[\cg@node@linestyle] #1 \@tempsp\cg@linelabel\@tempsp #2;}
   \expandafter\draw\@tempa
 }}
