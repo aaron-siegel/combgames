@@ -1,0 +1,6 @@
+% This is GAME7.MF
+% Use parameter settings from cmsy7
+if unknown cmbase: input cmbase fi
+def generate suffix t= enddef;
+input cmsy7;
+input game;

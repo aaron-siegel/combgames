@@ -1,0 +1,6 @@
+% This is GAME9.MF
+% Use parameter settings from cmsy9
+if unknown cmbase: input cmbase fi
+def generate suffix t= enddef;
+input cmsy9;
+input game;

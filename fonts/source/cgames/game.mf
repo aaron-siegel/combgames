@@ -1,0 +1,263 @@
+% This is GAME.MF
+% Game theory font, base macros
+% by Raymond Chen (rjc@math.princeton.edu)
+%
+% Revision History:
+%
+% 10-Dec-91 fix the stems of the arrows so as not to be asymmetrically
+%           pointy at low resolutions
+%           Add Sunny.
+% 09-Dec-91 thicken the circle around the `k' and `K' for kos
+%           fix the angles of the two strokes in `k' and `K'
+
+% proofing:=2;
+
+% boolean test;
+
+def tested = iff (not boolean test) : enddef;
+
+font_coding_scheme:="game symbols";
+mode_setup; font_setup;
+
+slant:=mono_charic#:=0; % the remaining characters will not be slanted
+currenttransform:=identity yscaled aspect_ratio scaled granularity;
+
+tested cmchar "Triple upward arrow";
+beginchar(oct"000", 12u#, asc_height#, asc_depth#);
+adjust_fit(0,0); pickup rule.nib;
+compute_spread(.4x_height#,.5x_height#);
+bot y10=bot y1=bot y2=-d-eps; top y7=h; y11=y8=y7; x1=x7; x2=x8; x10=x11;
+x1-x10=x10-x2=spread-eps; x10=good.x.5w-eps;
+draw z1--z7; draw z2--z8; draw z10--z11; % bars
+pickup crisp.nib; top y0=h+eps; x0=good.x .5w;
+pos3(rule_thickness,90); pos4(rule_thickness,90);
+x2-x3=x4-x1=2u+eps; y3=y4=y0-.48asc_height-eps;
+pos5(rule_thickness,angle(z4-z0)); z5l=z0;
+pos6(rule_thickness,angle(z3-z0)); z6l=z0;
+z9=.381966[.5[z3,z4],z0];
+erase filldraw z0..{z3-z9}z3--(x3,h)
+ --(x4,h)--z4{z9-z4}..z0 & cycle;  % erase excess
+numeric t; path p; p=z4l{z9-z4}..z6r;
+t=xpart(p intersectiontimes((x0,-d)--(x0,h)));
+filldraw z0..{z4-z9}z4r--subpath (0,t) of\\(z4l{z9-z4}..z6r)
+ --subpath (t,0) of\\(z3l{z9-z3}..z5r)--z3r{z9-z3}..z0 & cycle;  % arrowhead
+penlabels(0,1,2,3,4,5,6,7,8,9,10,11); endchar;
+
+tested cmchar "Triple downward arrow";
+beginchar(oct"001",12u#,asc_height#,asc_depth#);
+adjust_fit(0,0); pickup rule.nib;
+compute_spread(.4x_height#,.5x_height#);
+top y10=top y1=top y2=h+eps; bot y7=-d; y11=y8=y7; x1=x7; x2=x8; x10=x11;
+x1-x10=x10-x2=spread-eps; x10=good.x.5w-eps;
+draw z1--z7; draw z2--z8; draw z10--z11; % bars
+pickup crisp.nib; bot y0=-d-eps; x0=good.x .5w;
+pos3(rule_thickness,90); pos4(rule_thickness,90);
+x2-x3=x4-x1=2u+eps; y3=y4=y0+.48asc_height-eps;
+pos5(rule_thickness,angle(z4-z0)); z5l=z0;
+pos6(rule_thickness,angle(z3-z0)); z6l=z0;
+z9=.381966[.5[z3,z4],z0];
+erase filldraw z0..{z3-z9}z3--(x3,-d)
+ --(x4,-d)--z4{z9-z4}..z0 & cycle;  % erase excess
+numeric t; path p; p=z4r{z9-z4}..z6r;
+t=xpart(p intersectiontimes((x0,-d)--(x0,h)));
+filldraw z0..{z4-z9}z4l--subpath (0,t) of\\(z4r{z9-z4}..z6r)
+ --subpath (t,0) of\\(z3r{z9-z3}..z5r)--z3l{z9-z3}..z0 & cycle;  % arrowhead
+penlabels(0,1,2,3,4,5,6,7,8,9,10,11); endchar;
+
+tested cmchar "Quadruple upward arrow";
+beginchar(oct"002", 14u#, asc_height#, asc_depth#);
+adjust_fit(0,0); pickup rule.nib;
+compute_spread(.3x_height#,.4x_height#);
+bot y12=bot y10=bot y1=bot y2=-d-eps;
+top y7=h; y13=y11=y8=y7; x1=x7; x2=x8; x10=x11; x12=x13;
+x1-x10=x10-x12=x12-x2=spread-eps; x2=good.x(.5w-1.5spread-eps);
+draw z1--z7; draw z2--z8; draw z10--z11; draw z12--z13; % bars
+pickup crisp.nib; top y0=h+eps; x0=good.x .5w;
+pos3(rule_thickness,90); pos4(rule_thickness,90);
+x2-x3=x4-x1=1u+eps; y3=y4=y0-.48asc_height-eps;
+pos5(rule_thickness,angle(z4-z0)); z5l=z0;
+pos6(rule_thickness,angle(z3-z0)); z6l=z0;
+z9=.381966[.5[z3,z4],z0];
+erase filldraw z0..{z3-z9}z3--(x3,h)
+ --(x4,h)--z4{z9-z4}..z0 & cycle;  % erase excess
+numeric t; path p; p=z4l{z9-z4}..z6r;
+t=xpart(p intersectiontimes((x0,-d)--(x0,h)));
+filldraw z0..{z4-z9}z4r--subpath (0,t) of\\(z4l{z9-z4}..z6r)
+ --subpath (t,0) of\\(z3l{z9-z3}..z5r)--z3r{z9-z3}..z0 & cycle;  % arrowhead
+penlabels(0,1,2,3,4,5,6,7,8,9,10,11,12,13); endchar;
+
+tested cmchar "Quadruple downward arrow";
+beginchar(oct"003",14u#,asc_height#,asc_depth#);
+adjust_fit(0,0); pickup rule.nib;
+compute_spread(.3x_height#,.4x_height#);
+top y12=top y10=top y1=top y2=h+eps;
+bot y7=-d; y13=y11=y8=y7; x1=x7; x2=x8; x10=x11; x12=x13;
+x1-x10=x10-x12=x12-x2=spread-eps; x2=good.x(.5w-1.5spread-eps);
+draw z1--z7; draw z2--z8; draw z10--z11; draw z12--z13; % bars
+pickup crisp.nib; bot y0=-d-eps; x0=good.x .5w;
+pos3(rule_thickness,90); pos4(rule_thickness,90);
+x2-x3=x4-x1=1u+eps; y3=y4=y0+.48asc_height-eps;
+pos5(rule_thickness,angle(z4-z0)); z5l=z0;
+pos6(rule_thickness,angle(z3-z0)); z6l=z0;
+z9=.381966[.5[z3,z4],z0];
+erase filldraw z0..{z3-z9}z3--(x3,-d)
+ --(x4,-d)--z4{z9-z4}..z0 & cycle;  % erase excess
+numeric t; path p; p=z4r{z9-z4}..z6r;
+t=xpart(p intersectiontimes((x0,-d)--(x0,h)));
+filldraw z0..{z4-z9}z4l--subpath (0,t) of\\(z4r{z9-z4}..z6r)
+ --subpath (t,0) of\\(z3r{z9-z3}..z5r)--z3l{z9-z3}..z0 & cycle;  % arrowhead
+penlabels(0,1,2,3,4,5,6,7,8,9,10,11,12,13); endchar;
+
+tested cmchar "Tiny sign";
+beginarithchar(oct"010");
+x1=x2=x5=x6=good.x .5w; top y1=h+eps; .5[y1,y2]=math_axis;
+lft x3=hround u-eps; x4=w-x3; y3=y4=y5=y6=math_axis;
+pickup fine.nib;
+pos1(2flare, 0); pos2(2flare, 0);
+pos3(2flare,90); pos4(2flare,90);
+pos5(1.1stem, 0); pos6(1.1stem,90);
+filldraw stroke z1e..z5e..z2e; filldraw stroke z3e..z6e..z4e;
+penlabels(1,2,3,4,5,6);
+endchar;
+
+tested cmchar "Miny sign";
+beginarithchar(oct"011");
+x1=x2=x5=x6=good.x .5w; top y1=h+eps; .5[y1,y2]=math_axis;
+lft x3=hround u-eps; x4=w-x3; y3=y4=y5=y6=math_axis;
+pickup fine.nib;
+pos1(2flare, 0); pos2(2flare, 0);
+pos3(2flare,90); pos4(2flare,90);
+pos5(1.1stem, 0); pos6(1.1stem,90);
+filldraw stroke z3e..z6e..z4e;
+penlabels(1,2,3,4,5,6);
+endchar;
+
+tested cmchar "Norton multiply sign";
+numeric dot_diam#; dot_diam#=2*if monospace: 5/4 fi\\ dot_size#;
+define_whole_blacker_pixels(dot_diam);
+beginchar(oct"012", 5u#, dot_diam#, 0);
+adjust_fit(0,0); pickup fine.nib;
+pos1(dot_diam,0); pos2(dot_diam, 90);
+lft x1l=hround(.5w-.5dot_diam); bot y2l=0; z1=z2; dot(1,2); % dot
+penlabels(1,2); endchar;
+
+tested cmchar "Fuzzy sign";
+compute_spread(5/4x_height#,3/2x_height#);
+beginchar(oct"013",10u#,v_center(spread#+rule_thickness#));
+adjust_fit(0,0); pickup rule.nib;
+x1=x2=good.x .3w; x3=x4=w-x1;
+y3-y4=y1-y2=spread; .5[y1,y2]=.5[y3,y4]=math_axis;
+draw z1--z2; draw z3--z4;
+labels(1,2,3,4); endchar;
+
+tested cmchar "Less than or fuzzy sign";
+compute_spread(5/4x_height#,3/2x_height#);
+beginchar(oct"014",17u#,v_center(spread#+rule_thickness#));
+adjust_fit(0,0); pickup rule.nib;
+lft x2=hround 1.5u-eps; x1=x3=w-x2-3u;
+y1-y3=spread; y2=.5[y1,y3]=math_axis;
+x4=x5=good.x (x1+3u); y4=y1; y5=y3;
+draw z1--z2--z3--cycle; % triangle
+draw z4--z5;            % vertical bar
+labels(1,2,3,4,5); endchar;
+
+tested cmchar "Greater than or fuzzy sign";
+compute_spread(5/4x_height#,3/2x_height#);
+beginchar(oct"015",17u#,v_center(spread#+rule_thickness#));
+adjust_fit(0,0); pickup rule.nib;
+rt x2=hround(w-1.5u)+eps; x1=x3=w-x2+3u;
+y1-y3=spread; y2=.5[y1,y3]=math_axis;
+x4=x5=good.x (x1-3u); y4=y1; y5=y3;
+draw z1--z2--z3--cycle; % triangle
+draw z4--z5;            % vertical bar
+labels(1,2,3,4,5); endchar;
+
+tested cmchar "Upsum sign";
+beginarithchar(oct"016"); pickup rule.nib;
+x0=x1=x2=good.x .5w; top y1=h+eps; .5[y1,y2]=y0=math_axis;
+lft x3=hround u-eps; x4=w-x3; y3=y4=.5[y0,y2];
+draw z1--z2;     % stem
+draw z3--z0--z4; % crossbar
+labels(0,1,2,3,4); endchar;
+
+tested cmchar "Downsum sign";
+beginarithchar(oct"017"); pickup rule.nib;
+x0=x1=x2=good.x .5w; top y1=h+eps; .5[y1,y2]=y0=math_axis;
+lft x3=hround u-eps; x4=w-x3; y3=y4=.5[y0,y1];
+draw z1--z2;     % stem
+draw z3--z0--z4; % crossbar
+labels(0,1,2,3,4); endchar;
+
+% A sans serif lowercase k inside a circle, to denote chilled kos.
+
+tested cmchar "chilled ko";
+beginchar(oct"020", 18u#, asc_height#, desc_depth#); autorounded;
+adjust_fit(if monospace:-3u#,-3u# else: 0,0 fi);
+pickup pencircle scaled 1.5rule_thickness;
+lft x6=hround u; x2=w-x6; top y8=h+o; bot y4=-d-o; circle_points; draw_circle;
+pickup rule.nib;
+lft x9=good.x (.5w-2u); x9=x10=x15; x11=x12=w-x9;
+y10=y12=.5h-6u; y9=.5h+2u; y15=y11=(x_height/asc_height)[y10,y9];
+z13=(.7bar_height/asc_height)[z10,z9];
+z14=whatever[z11,z13]=whatever[z12,z15];
+draw z9--z10; draw z13--z11; draw z14--z12;
+labels(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15); endchar;
+
+tested cmchar "warmed Ko";
+beginchar(oct"021", 18u#, asc_height#, desc_depth#); autorounded;
+adjust_fit(if monospace:-3u#,-3u# else: 0,0 fi);
+pickup pencircle scaled 1.5rule_thickness;
+lft x6=hround u; x2=w-x6; top y8=h+o; bot y4=-d-o; circle_points; draw_circle;
+pickup rule.nib;
+lft x9=good.x (.5w-3u); x9=x10; x11=x12=w-x9;
+y10=y12=.5h-6u; y9=.5h+2u; y11=y9;
+z13=1/3[z10,z9]; z14=whatever[z11,z13]=whatever[z9,z12];
+draw z9--z10; draw z13--z11; draw z14--z12;
+labels(1,2,3,4,5,6,7,8,9,10,11,12,13,14); endchar;
+
+tested cmchar "Zero-width bar for placement over ko";
+compute_spread(.2x_height#,.3x_height#);
+beginchar(oct"022", 18u#, asc_height#+spread#+rule_thickness#, desc_depth#);
+adjust_fit(if monospace:-3u#,-3u# else: 0,0 fi);
+pickup pencircle scaled 1.5rule_thickness;
+rt x5=hround(w-2.5u)-eps; lft x6=hround 2.5u+eps;
+top y5=top y6=h+o;
+draw z5--z6;
+labels(5,6); zero_width; endchar;
+
+% The subtleties of the far-star are completely lost at 300dpi.
+tested cmchar "Far star";
+beginchar(oct"023", asc_height#+desc_depth#, asc_height#, desc_depth#);
+autorounded;
+adjust_fit(.5u#, .5u#); pickup rule.nib;
+numeric theta; theta = 360/5;
+def :: = ..tension5.. enddef;
+x0=good.x .5w; y0=good.y .5[h,-d]; x1=x0; top y1=h;
+for n=2 upto 5: z[n]=z0+(z1-z0) rotated ((n-1)*theta); endfor
+z6=.9[z0,(z1--z3)intersectionpoint(z2--z5)]; % pull inwards
+for n=7 upto 10: z[n]=z0+(z6-z0) rotated ((n-1)*theta); endfor
+join_radius := 1u; % soften the pointy tips
+draw z10--z1 softjoin z1--z6;
+draw  z6--z2 softjoin z2--z7;
+draw  z7--z3 softjoin z3--z8;
+draw  z8--z4 softjoin z4--z9;
+draw  z9--z5 softjoin z5--z10;
+penlabels(0,1,2,3,4,5,6,7,8,9,10); endchar;
+
+tested cmchar "Loony";
+beginchar(oct"024", 18u#, asc_height#, desc_depth#);
+adjust_fit(if monospace:-3u#,-3u# else: 0,0 fi); pickup rule.nib;
+lft x6=hround u; x2=w-x6; top y8=h+o; bot y4=-d-o; circle_points;
+z0=.5[z4,z7] + .3*((z4-z7) rotated 90);
+draw z7{z8-z6}..z8{right}..z1{z2-z8}..z2{down}..z3{z4-z2}..{left}z4 &
+     flex(z4, z0, z7) & cycle;
+penlabels(0,1,2,3,4,5,6,7,8); endchar;
+
+cmchar "Sunny";
+beginchar(oct"025", 18u#, asc_height#, desc_depth#);
+adjust_fit(if monospace:-3u#,-3u# else: 0,0 fi); pickup rule.nib;
+lft x6=hround u; x2=w-x6; top y8=h+o; bot y4=-d-o; circle_points; draw_circle;
+fill fullcircle scaled (length(z4-z8)/2+eps) shifted (.5[z4,z8]); % dot
+penlabels(1,2,3,4,5,6,7,8); endchar;
+
+bye
