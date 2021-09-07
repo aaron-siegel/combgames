@@ -1,0 +1,364 @@
+\documentclass{article}
+
+\usepackage{bigstrut,array,float,fancyvrb,amsmath,amssymb,marvosym,verbatim,combgames}
+\usepackage{hyperref}
+
+\newcommand\cn[1]{\texttt{\string#1}}
+\newcommand\ds[1]{$#1$ & \cn{#1}}
+\newcommand\combgames{\textsf{combgames}}
+
+\newenvironment{VExample}
+  {\VerbatimEnvironment\begin{VerbatimOut}{example.out}}
+  {\end{VerbatimOut}
+   \VerbatimInput{example.out}
+   \medskip\par
+   \begin{center}$\input example.out $\end{center}}
+
+\newenvironment{HExample}
+  {\VerbatimEnvironment\begin{VerbatimOut}{example.out}}
+  {\end{VerbatimOut}
+   \begin{center}
+   \begin{minipage}{2.25in}
+   \BVerbatimInput{example.out}
+   \end{minipage}
+   \begin{minipage}{2.25in}
+   \centering$\input example.out $
+   \end{minipage}
+   \end{center}}
+   
+\title{The \combgames{} Package}
+\author{Aaron N. Siegel\\\texttt{aaron.n.siegel@gmail.com} \and
+        David Wolfe\\\texttt{davidgameswolfe@gmail.com}}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\section{The Symbol Font}
+
+\combgames{} defines the following symbols.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{clclcl}
+\ds{\cgup} & \ds{\cgdown} & \ds{\cgstar} \bigstrut\\
+\ds{\cgdoubleup} & \ds{\cgdoubledown} & \ds{\cgneg} \bigstrut\\
+\ds{\cgtripleup} & \ds{\cgtripledown} & \ds{\cgfarstar} \bigstrut\\
+\ds{\cgquadup} & \ds{\cgquaddown} & \ds{\cgsunny} \bigstrut\\
+\ds{\cgtiny} & \ds{\cgminy} & \ds{\cgloony} \bigstrut\\
+\ds{\cgko} & \ds{\cgKo} \bigstrut\\
+\ds{\cgkobar} & \ds{\cgKobar} \bigstrut
+\end{tabular}
+\caption{\combgames{} ordinary symbols.}
+\end{table}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{clclcl}
+\ds{\cglfuz} & \ds{\cggfuz} & \ds{\cgfuzzy} \bigstrut\\
+\ds{\cgupsum} & \ds{\cgdownsum} & \ds{\cgnmultiply} \bigstrut
+\end{tabular}
+\caption{\combgames{} binary relations.}
+\end{table}
+
+A few notes.
+
+\begin{itemize}
+\item Usage of \cn{\cgnmultiply} for Norton multiplication has been largely supplanted by a simple \cn{\cdot}.  Compare:
+\[G \cgnmultiply \cgup \qquad\qquad \textrm{versus} \qquad\qquad G \cdot \cgup\]
+\item This author dislikes the \cn{\cgfuzzy} symbol, precisely because there are already too many slashes in CGT.  A reasonable alternative is \cn{\not}\cn{\gtrless}, which is available in the \textsf{amssymb} package.  Compare:
+\[G \cgfuzzy H \qquad\qquad \textrm{versus} \qquad\qquad G \not\gtrless H\]
+\item The \textsf{marvosym} package provides a \cn{\Moon} symbol that can be used as an alternative to \cn{\cgloony}:
+\[\cgloony \qquad\qquad \textrm{versus} \qquad\qquad \textrm{\Moon}\]
+\end{itemize}
+
+\section{Braces-and-Slashes Notation}
+
+\combgames{} also has a powerful facility for typesetting games using braces-and-slashes notation.  The basic command is \cn{\combgame}.  All braces and slashes used within the command will be properly spaced, and in displayed equations they'll be sized to fit the surrounding material.  Some examples:
+
+\begin{table}[H]
+{
+\centering
+\begin{tabular}{@{}l@{\hspace{0.3in}}c@{}}
+%%%%%
+\begin{verb}
+\combgame{2||1|0}
+\end{verb}
+&
+$\displaystyle \combgame{2||1|0}$
+\bigskip \\
+%%%%%
+\begin{verb}
+\combgame{\{3,\{4||2|1\}|||0||||-8\}}
+\end{verb} &
+$\displaystyle \combgame{\{3,\{4||2|1\}|||0||||-8\}}$
+\bigskip
+\end{tabular}
+%%%%%
+}
+
+\begin{verb}
+\int^T G = \combgame{\{T + \int^T G^L | -T + \int^T G^R\}}
+\end{verb}
+\bigskip
+
+\hfill$\displaystyle \int^T G = \combgame{\{T + \int^T G^L | -T + \int^T G^R\}}$
+
+\caption{Example usage of \cn{\combgame}.}
+\end{table}
+
+\begin{itemize}
+\item There is also a starred form, \cn{\combgame*}, that suppresses growth of the vertical bars:
+\begin{center}
+\begin{tabular}{@{}l@{\hspace{0.3in}}c@{}}
+%%%%%
+\begin{verb}
+\combgame{2|1||0|||-1||||-2}
+\end{verb}
+&
+$\displaystyle \combgame{2|1||0|||-1||||-2}$
+\bigskip \\
+%%%%%
+\begin{verb}
+\combgame*{2|1||0|||-1||||-2}
+\end{verb} &
+$\displaystyle \combgame*{2|1||0|||-1||||-2}$
+\bigskip
+\end{tabular}
+%%%%%
+\end{center}
+
+\item You should use \cn{\combgame} whenever appropriate, even for simple expressions, since it will typeset the result much more cleanly than otherwise.  Compare the following two examples.
+
+\begin{center}
+\begin{tabular}{l@{\hspace{1cm}}l@{\hspace{1cm}}l}
+\begin{verb}
+\combgame*{\{2||-1|-3\}}
+\end{verb}
+&
+$\combgame*{\{2||-1|-3\}}$
+&
+Beautiful!
+\bigskip \\
+\begin{verb}
+\{2||-1|-3\}
+\end{verb}
+&
+$\{2||-1|-3\}$
+&
+Hideous!
+\end{tabular}
+\end{center}
+
+\item Within the \texttt{combgame} argument, the brace commands \cn{\{} and \cn{\}} are redefined to mean \cn{\left}\cn{\{} and \cn{\right}\cn{\}}.  The old commands are still available as \cn{\lbrace} and \cn{\rbrace}.
+\item Due to the way \TeX{} processes command inputs, the slash notation will not function correctly if used inside a macro.  If you wish to define macros that refer to \cn{\combgame}, there is an alternative command \verb|\cgslashes{n}| for an $n$-tuple slash.  The commands \cn{\cgslash} and \cn{\cgsslash} are shorthand for $n = 1$ and $2$, respectively.  Here's an example:
+
+\begin{verbatim}
+\newcommand\threeswitch[3]
+  {\combgame{\{#1 \cgsslash #2 \cgslash #3\}}}
+\end{verbatim}
+
+Then \verb|\threeswitch{2}{1}{0}| would typeset
+
+\[\combgame{\{2||1|0\}}\]
+
+\item You can control the growth of the slashes by setting \cn{\cgslashextension}.  The default is \texttt{1.5pt}.  For example:
+\begin{center}
+\begin{tabular}{@{}l@{\hspace{0.3in}}c@{}}
+%%%%%
+\begin{verb}
+\combgame{2|1||0|||-1||||-2}
+\end{verb}
+&
+$\displaystyle \combgame{2|1||0|||-1||||-2}$
+\bigskip \\
+%%%%%
+\begin{minipage}{2.75in}
+\begin{verbatim}
+\setlength\cgslashextension{3pt}
+\combgame{2|1||0|||-1||||-2}
+\end{verbatim}
+\end{minipage} &
+$\displaystyle \setlength\cgslashextension{3pt} \combgame{2|1||0|||-1||||-2}$
+\bigskip
+\end{tabular}
+%%%%%
+\end{center}
+\end{itemize}
+
+\section{Game Trees}
+
+You can typeset game trees easily with the powerful \cn{\cgtree} command.  Trees should be placed inside a \texttt{pspicture} environment and can coexist with other pstricks objects.  Here's a simple example:
+
+\begin{VExample}
+\begin{pspicture}(5,4)
+\put(1,4){\cgtree{
+  {\cgup^2} (0 | {\cgdown\cgstar} (0 | 0 \cgstar))
+}}
+\end{pspicture}
+\end{VExample}
+
+The general syntax of a \cn{\cgtree} argument is \verb|\cgtree{node}| where \texttt{node} has the following specification:
+
+\begin{verbatim}
+node    ::=   label (subtree)?
+            | special
+
+subtree ::= '(' (node)* '|' (node)* ')'
+\end{verbatim}
+
+\texttt{label} may be either a single token, or a more complicated expression delineated by braces.  The two nodelists in the subtree expression are typeset as left and right options of the parent node.  Left options are laid out right-to-left; Right options left-to-right; always starting at the parent node.  If the label is \texttt{.} then a node will be created with no label.  \texttt{special} may be one of the following:
+
+\begin{itemize}
+\item \texttt{+} increases the space between options
+\item \texttt{-} decreases the space between options
+\item \texttt{:} creates a symbolic link (described below)
+\end{itemize}
+
+The \texttt{cgtree} command takes several options:
+
+\begin{itemize}
+\item \texttt{arrows} specifies the arrowheads used for tree edges, as in pstricks.  Example: \texttt{arrows=->}
+\item \texttt{unit} specifies the scale for drawing the tree, e.g., \texttt{unit=.5cm} (default: 1cm)
+\item \texttt{nodesep} specifies the separation between edges and node boundaries.  Default is \texttt{nodesep=.75ex}
+\end{itemize}
+
+In addition, each \emph{node} may have several options.  Node options should be written in brackets immediately following the node label (and before the associated subtree, if one exists).
+
+\begin{itemize}
+\item \texttt{arrow} specifies the arrowhead for the edge \emph{to} this node
+\item \texttt{sep} specifies the separation for this node
+\item \texttt{name} gives a name for this node.  \emph{Names must consist only of letters and numbers}.  They can be used in symbolic links (see below) or elsewhere in the \texttt{pspicture} environment.
+\item \texttt{ko} draws the edge \emph{to} this node as a ko.
+\end{itemize}
+
+If a \texttt{:} is specified instead of a node, a symbolic link is created.  The \texttt{:} must be followed by a list of options in brackets, which \emph{must} include the \texttt{name} option.  An edge will then be drawn to the previously named node.  Be careful, as this will \emph{not} take into account whether the edge points left or right!
+
+\begin{VExample}
+\begin{pspicture}(6,6)
+\put(1,6){\cgtree{
+ G ( . ( | {K_1} [name=koroot] (1 | {K_2} [ko,arrow=<->] (|0) ) )
+   | . (:[name=koroot] | )
+   )}}
+\end{pspicture}
+\end{VExample}
+
+\bigskip
+
+One last example: the following mess typesets a pretty figure from Bill Fraser's thesis.
+
+\begin{VExample}
+\psset{unit=.6cm}
+\begin{pspicture}(19,6)
+\put(5,6){\cgtree[unit=.6cm]{
+  {D_1}[name=D1] ( U (T[ko,name=T] (4|) | 3[name=three])
+  {D^L}[ko] (:[name=T] | +++++++{D_2}[ko] (2 |
+    W(.(2|-.[ko,name=WLR](|1)) | -.[ko] (:[name=WLR,sep=0pt]|{-10}))
+    +++{D^R}[ko](X :[ko,name=D1]|{-11})
+  )) | V (:[name=three] | .[ko](.(-.[ko](2|)|1)|{-10})))
+}}
+\end{pspicture}
+\end{VExample}
+
+\section{Game Boards}
+
+There is also an extensible facility for typesetting grid-based games.  The following examples illustrate usage for several of the built-in games.
+
+\begin{VExample}
+\Domineering{ooo\\oo\\} = \combgame{
+  \{ \Domineering{^oo\\vo\\},
+     \Domineering{o^o\\ov\\}
+   | \Domineering{<>o\\oo\\},
+     \Domineering{o<>\\oo\\},
+     \Domineering{ooo\\<>\\}   \}}
+\end{VExample}
+
+\bigskip
+
+\begin{HExample}
+\clobber{xxxo\\o.ox\\xoxo}
+\end{HExample}
+
+\medskip
+
+\begin{HExample}
+\Clobber{xxxo\\o.ox\\xoxo}
+\end{HExample}
+
+\medskip
+
+\begin{HExample}
+\DotsAndBoxes[unit=.5cm]{
+  o+o.o.o-o-o \\
+  |.|.|.|.*.| \\
+  o.o.o.o*o*o \\
+  |.|.|.|.|.| \\
+  o-o.o.o*o*o \\
+  |A|.|.|.|.| \\
+  o-o.o.o*o*o}
+\end{HExample}
+
+\medskip
+
+\begin{HExample}
+\Amazons[unit=.5cm]{..x\\.L.\\x.R}
+\end{HExample}
+
+\bigskip
+
+You can declare new games easily with the \cn{\newgridgame} command.  The syntax is very simple.  The command argument consists of a list of allowed grid characters together with instructions for typesetting them.  For example, the \cn{\clobber} command is declared as follows.
+
+\begin{verbatim}
+\newgridgame[unit=.3cm]{clobber}{
+  X {\ClobberX}
+  O {\ClobberO}
+  x {\ClobberX}
+  o {\ClobberO}
+}
+\end{verbatim}
+
+Here \cn{\ClobberX} and \cn{\ClobberO} are primitive commands for rendering clobber symbols.
+
+\section{Thermographs}
+
+\combgames{} provides a \texttt{thermoplot} environment that can be used to draw an arbitrary number of thermographs together on the same plot.  For example:
+
+\begin{VExample}
+\begin{thermoplot}[left=5/2,right=-5/2]
+\thermograph{0}(0,3)(2,1)(2,-1);(0,3)(-1,2)(-1,1)(-3,-1)
+\end{thermoplot}
+\end{VExample}
+
+\bigskip
+
+Coordinates must be specified as \emph{rational numbers in the usual (CGT) coordinate space}.  The \cn{\thermograph} command is followed by an argument specifying the mast value.  This is followed by any number of semicolon-separated trajectories, listing the $(\textit{v},\textit{t})$-coordinates of each critical point on the trajectory.
+
+Multiple thermographs can be placed on the same plot:
+
+\begin{VExample}
+\begin{thermoplot}[left=6,right=-19,top=12,scale=0.45cm]
+\thermograph[linecolor=blue]{1/2}
+  (1/2,13/2)(2,5)(2,2)(8,-1);
+  (1/2,13/2)(2,5)(2,2)(-1,-1)
+\thermograph[linecolor=red]{-19/4}
+  (-19/4,19/4)(1,-1);
+  (-19/4,19/4)(-21,-1)
+\end{thermoplot}
+\end{VExample}
+
+\bigskip
+
+Note how, in these examples, each trajectory is carried down to $-1$ instead of~$0$.  This generates the ``hooks'' that extend below $t = 0$ on the thermographs.
+
+You can also place individual trajectories instead of full thermographs.  This can be useful if the mast has nonzero slope.  For example:
+
+\begin{VExample}
+\begin{thermoplot}[left=1,right=-4]
+\trajectory[linecolor=lightgray](1,4)(-1,2)(-1,1)(-3,-1)
+\thermograph{-3}(-3,2)(-2,1)(-2,-1);(-3,2)(-4,1)(-4,-1)
+\end{thermoplot}
+\end{VExample}
+
+\end{document}
