@@ -54,6 +54,12 @@
 \caption{\combgames{} ordinary symbols.}
 \end{table}
 
+The commands \cn{\cgups\{n\}} and \cn{\cgdowns\{n\}} can be used to give parameterized multiples of $\cgup$ and $\cgdown$:
+
+\[
+\cgups{3}\quad \cn{\cgups\{3\}}\qquad \cgdowns{4}\quad \cn{\cgdowns\{4\}} \qquad \cgups{6}\quad \cn{\cgups\{6\}}
+  \]
+
 \begin{table}[H]
 \centering
 \begin{tabular}{clclcl}
@@ -190,14 +196,21 @@ $\displaystyle \setlength\cgslashextension{3pt} \combgame{2|1||0|||-1||||-2}$
 
 \section{Game Trees}
 
-You can typeset game trees easily with the powerful \cn{\cgtree} command.  Trees should be placed inside a \texttt{pspicture} environment and can coexist with other pstricks objects.  Here's a simple example:
+You can typeset game trees easily with the powerful \cn{\cgtree} command.  Here's a simple example:
+
+
+% \begin{VExample}
+% \begin{pspicture}(5,4)
+% \put(1,4){\cgtree{
+%   {\cgup^2} (0 | {\cgdown\cgstar} (0 | 0 \cgstar))
+% }}
+% \end{pspicture}
+% \end{VExample}
 
 \begin{VExample}
-\begin{pspicture}(5,4)
-\put(1,4){\cgtree{
+\cgtree{
   {\cgup^2} (0 | {\cgdown\cgstar} (0 | 0 \cgstar))
-}}
-\end{pspicture}
+}
 \end{VExample}
 
 The general syntax of a \cn{\cgtree} argument is \verb|\cgtree{node}| where \texttt{node} has the following specification:
@@ -236,30 +249,50 @@ In addition, each \emph{node} may have several options.  Node options should be 
 
 If a \texttt{:} is specified instead of a node, a symbolic link is created.  The \texttt{:} must be followed by a list of options in brackets, which \emph{must} include the \texttt{name} option.  An edge will then be drawn to the previously named node.  Be careful, as this will \emph{not} take into account whether the edge points left or right!
 
+% \begin{VExample}
+% \begin{pspicture}(6,6)
+% \put(1,6){\cgtree{
+%  G ( . ( | {K_1} [name=koroot] (1 | {K_2} [ko,arrow=<->] (|0) ) )
+%    | . (:[name=koroot] | )
+%    )}}
+% \end{pspicture}
+% \end{VExample}
+
+
 \begin{VExample}
-\begin{pspicture}(6,6)
-\put(1,6){\cgtree{
+\cgtree{
  G ( . ( | {K_1} [name=koroot] (1 | {K_2} [ko,arrow=<->] (|0) ) )
    | . (:[name=koroot] | )
-   )}}
-\end{pspicture}
+   )}
 \end{VExample}
+
 
 \bigskip
 
 One last example: the following mess typesets a pretty figure from Bill Fraser's thesis.
 
+% \begin{VExample}
+% \psset{unit=.6cm}
+% \begin{pspicture}(19,6)
+% \put(5,6){\cgtree[unit=.6cm]{
+%   {D_1}[name=D1] ( U (T[ko,name=T] (4|) | 3[name=three])
+%   {D^L}[ko] (:[name=T] | +++++++{D_2}[ko] (2 |
+%     W(.(2|-.[ko,name=WLR](|1)) | -.[ko] (:[name=WLR,sep=0pt]|{-10}))
+%     +++{D^R}[ko](X :[ko,name=D1]|{-11})
+%   )) | V (:[name=three] | .[ko](.(-.[ko](2|)|1)|{-10})))
+% }}
+% \end{pspicture}
+% \end{VExample}
+
+
 \begin{VExample}
-\psset{unit=.6cm}
-\begin{pspicture}(19,6)
-\put(5,6){\cgtree[unit=.6cm]{
+\cgtree[unit=.6cm]{
   {D_1}[name=D1] ( U (T[ko,name=T] (4|) | 3[name=three])
   {D^L}[ko] (:[name=T] | +++++++{D_2}[ko] (2 |
     W(.(2|-.[ko,name=WLR](|1)) | -.[ko] (:[name=WLR,sep=0pt]|{-10}))
     +++{D^R}[ko](X :[ko,name=D1]|{-11})
   )) | V (:[name=three] | .[ko](.(-.[ko](2|)|1)|{-10})))
-}}
-\end{pspicture}
+}
 \end{VExample}
 
 \section{Game Boards}
